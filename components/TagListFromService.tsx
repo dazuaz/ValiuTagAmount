@@ -1,52 +1,61 @@
-import React, {useEffect} from 'react';
-import {Animated, Text} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {Animated} from 'react-native';
 import {getAllTags, removeTag} from '../utils/TagsApi';
 import TagsList from './TagList';
-import useTagsService, {Status} from './useTagsService';
+import {ActionTypes, Status, useTagListDispatch} from './TagListContext';
 
 interface TagListFromServiceProps {
   offset: Animated.Value;
+  onEdit: () => void;
 }
 export const TagListFromService: React.FC<TagListFromServiceProps> = ({
   offset,
+  onEdit,
 }) => {
-  const {state, dispatch} = useTagsService();
-  console.log('render');
+  const [initialLoad, setInitialLoad] = useState(false);
+  const dispatch = useTagListDispatch();
+
   useEffect(() => {
-    dispatch({type: 'UPDATE_STATUS', payload: Status.Loading});
-    const loadFromServer = async () => {
-      const result = await getAllTags();
-      if (result?.status === '200') {
-        dispatch({type: 'RESET_TAGS', payload: result.data});
-      } else {
-        dispatch({type: 'UPDATE_STATUS', payload: Status.Error});
-        console.log(result?.message);
-        // Log out the error to loggin service
+    const handleInitialLoad = async () => {
+      try {
+        dispatch({type: 'UPDATE_STATUS', payload: Status.Loading});
+        const result = await getAllTags();
+        if (result?.status === '200') {
+          dispatch({type: 'RESET_TAGS', payload: result.data});
+        } else {
+          dispatch({type: 'UPDATE_STATUS', payload: Status.Error});
+        }
+      } catch (error) {
+        throw new Error('Error connecting to the database');
       }
     };
-    loadFromServer();
-  }, [dispatch]);
+    if (!initialLoad) {
+      handleInitialLoad();
+      setInitialLoad(true);
+    }
+  }, [initialLoad, dispatch]);
 
   const handleRemoveTag = async (id: string) => {
-    dispatch({type: 'REMOVE_TAG', payload: id}); //remove on client
     await removeTag(id); //remove on server TODO: handle failure
+    dispatch({type: 'REMOVE_TAG', payload: id}); //remove on client
   };
 
-  if (state.status === Status.Error) {
-    return <Text>Ups, something went wrong...</Text>;
-  }
+  const handleRefresh = async () => {
+    dispatch({type: 'SET_REFRESHING', payload: true});
+    const result = await getAllTags();
+    if (result?.status === '200') {
+      if (result.data.length) {
+        dispatch({type: ActionTypes.RESET_TAGS, payload: result.data});
+      }
+    }
+    dispatch({type: 'SET_REFRESHING', payload: false});
+  };
 
-  if (state.status === Status.Loading) {
-    return <Text>Loading...</Text>;
-  }
-
-  if (!state.tags.length) {
-    return <Text>Empty List</Text>;
-  }
   return (
     <TagsList
-      tags={state.tags}
       offset={offset}
+      onRefresh={() => handleRefresh()}
+      onEdit={onEdit}
       onDelete={(id: string) => handleRemoveTag(id)}
     />
   );

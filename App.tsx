@@ -13,29 +13,26 @@
 
 import React from 'react';
 import {SafeAreaView, StatusBar} from 'react-native';
-
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import HomeScreen from './screens/HomeScreen';
 import NumpadScreen from './screens/NumpadScreen';
 import {RootStackParamList} from './types';
-
+import {TagListProvider} from './components/TagListContext';
 const Stack = createStackNavigator<RootStackParamList>();
 
-const App = () => {
-  // Only used for demo, should be replaced by react-navigation or similar
-
-  return (
-    <NavigationContainer>
-      <StatusBar barStyle="dark-content" />
+const App = () => (
+  <NavigationContainer>
+    <StatusBar barStyle="dark-content" />
+    <TagListProvider>
       <SafeAreaView style={{flex: 1}}>
         <Stack.Navigator screenOptions={{headerShown: false}}>
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Numpad" component={NumpadScreen} />
         </Stack.Navigator>
       </SafeAreaView>
-    </NavigationContainer>
-  );
-};
+    </TagListProvider>
+  </NavigationContainer>
+);
 
 export default App;

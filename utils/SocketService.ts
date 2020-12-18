@@ -16,7 +16,7 @@ export class SocketService {
   private socket: SocketIOClient.Socket = {} as SocketIOClient.Socket;
 
   public init(): SocketService {
-    console.log('initiating socket service');
+    // console.log('initiating socket service');
     this.socket = io('ws://localhost:3000');
     return this;
   }
@@ -34,7 +34,7 @@ export class SocketService {
     return fromEvent(this.socket, 'REMOVE_TAG');
   }
 
-  // disconnect - used when unmounting
+  // disconnect - use this when unmounting
   public disconnect(): void {
     this.socket.disconnect();
   }

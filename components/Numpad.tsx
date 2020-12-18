@@ -1,95 +1,59 @@
-import React from 'react';
-import {Dimensions, Pressable, Text, View} from 'react-native';
-import {ActionTypes, useCurrencyDispatch} from './CurrencyInputContext';
+import React, {useEffect} from 'react';
+import {View} from 'react-native';
+import NumpadInput from './NumpadInput';
+import NumpadButton from './NumpadButton';
+import NumpadDigits from './NumpadDigits';
+import {Colors} from './Theme';
+import {ActionTypes, useCurrencyDispatch} from './CurrencyContext';
+import {Tag} from '../types';
+import {CustomMasker} from '../utils/CustomMasker';
 
-type PadProps = {
-  number?: number;
-  type?: ActionTypes;
+type NumpadProps = {
+  editTag?: Tag;
+  goBack: () => void;
 };
+const masker = new CustomMasker();
 
-const Pad: React.FC<PadProps> = ({
-  number,
-  type = ActionTypes.INSERT_NUMBER,
-  children,
-}) => {
+const Numpad: React.FC<NumpadProps> = ({editTag, goBack}) => {
   const dispatch = useCurrencyDispatch();
 
+  useEffect(() => {
+    // if navigating from and edit tag, we update the input and
+    if (editTag?._id) {
+      dispatch({
+        type: ActionTypes.INSERT_NUMBER,
+        payload: masker.mask(editTag.title),
+      });
+    }
+  }, [editTag, dispatch]);
+
   return (
-    <Col>
-      <Pressable
-        onPress={() => dispatch({type: type, payload: number})}
-        style={{
-          flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-        {children}
-      </Pressable>
-    </Col>
+    <>
+      <View style={{paddingHorizontal: 24}}>
+        <View style={{flexDirection: 'row'}}>
+          <View style={{width: '70%'}}>
+            <NumpadInput
+              style={{
+                flex: 1,
+                borderBottomWidth: 1.5,
+                borderColor: Colors.primary,
+                backgroundColor: Colors.lighter,
+                fontSize: 24,
+                paddingHorizontal: 12,
+                borderRadius: 4,
+              }}
+            />
+          </View>
+          <View style={{width: '30%'}}>
+            <NumpadButton editTag={editTag} goBack={() => goBack()} />
+          </View>
+        </View>
+      </View>
+      <View style={{flex: 1, marginTop: 48}}>
+        <NumpadDigits />
+      </View>
+    </>
   );
 };
-
-const Numpad = () => {
-  const windowHeight = Dimensions.get('window').height;
-  const Row: React.FC = ({children}) => (
-    <View
-      style={{
-        flex: 1,
-        flexDirection: 'row',
-      }}
-      children={children}
-    />
-  );
-  return (
-    <View
-      style={{
-        flex: 1,
-        paddingHorizontal: 24,
-        maxHeight: windowHeight * 0.5,
-        minHeight: 400,
-      }}>
-      <Row>
-        <NumberPad number={1} />
-        <NumberPad number={2} />
-        <NumberPad number={3} />
-      </Row>
-      <Row>
-        <NumberPad number={4} />
-        <NumberPad number={5} />
-        <NumberPad number={6} />
-      </Row>
-      <Row>
-        <NumberPad number={7} />
-        <NumberPad number={8} />
-        <NumberPad number={9} />
-      </Row>
-      <Row>
-        <Pad type={ActionTypes.INSERT_COMMA}>
-          <Text>,</Text>
-        </Pad>
-        <NumberPad number={0} />
-        <Pad type={ActionTypes.DELETE}>
-          <Text>Del</Text>
-        </Pad>
-      </Row>
-    </View>
-  );
-};
-
-const NumberPad: React.FC<{number: number}> = ({number}) => (
-  <Pad number={number}>
-    <Text
-      style={{
-        fontSize: 18,
-        fontWeight: '600',
-      }}>
-      {number}
-    </Text>
-  </Pad>
-);
-
-const Col: React.FC = ({children}) => (
-  <View style={{flex: 1}} children={children} />
-);
 
 export default Numpad;

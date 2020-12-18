@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /**
  * TagsAPI
  * Abstracts CRUD communication with the Tags Service API Backend
@@ -15,11 +16,11 @@ LogBox.ignoreLogs(['Require cycle: node_modules']);
 
 const API_BASE_URL = 'http://localhost:3000/api/tags';
 
-interface ValiuResponse<T> {
+type ValiuResponse<T> = {
   data: T;
   message: string;
   status: string;
-}
+};
 export const getAllTags = async (): Promise<
   ValiuResponse<Tag[]> | undefined
 > => {
@@ -38,11 +39,18 @@ export const removeTag = async (id: string) => {
   const response = await remove<ValiuResponse<Tag>>(API_BASE_URL + '/' + id);
   return response;
 };
-export const addTag = async (tag: Tag) => {
-  const response = await post<ValiuResponse<Tag>>(API_BASE_URL, tag);
+export const createTag = async (title: string, color: string) => {
+  const response = await post<ValiuResponse<Tag>>(API_BASE_URL, {
+    title,
+    color,
+  });
+  if (!response.ok) {
+    throw new Error(response.parsedBody?.message ?? response.statusText);
+  }
   return response;
 };
-export const editTag = async (id: string, newTag: Tag) => {
+
+export const modifyTag = async (id: string, newTag: Tag) => {
   const response = await put<ValiuResponse<Tag>>(
     API_BASE_URL + '/' + id,
     newTag,
@@ -56,7 +64,9 @@ interface HttpResponse<T> extends Response {
 
 async function get<T>(
   path: string,
-  args: RequestInit = {method: 'get'},
+  args: RequestInit = {
+    method: 'get',
+  },
 ): Promise<HttpResponse<T>> {
   return await http<T>(new Request(path, args));
 }
@@ -64,7 +74,14 @@ async function get<T>(
 async function post<T>(
   path: string,
   body: any,
-  args: RequestInit = {method: 'post', body: JSON.stringify(body)},
+  args: RequestInit = {
+    method: 'post',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  },
 ): Promise<HttpResponse<T>> {
   return await http<T>(new Request(path, args));
 }
@@ -72,7 +89,14 @@ async function post<T>(
 async function put<T>(
   path: string,
   body: any,
-  args: RequestInit = {method: 'put', body: JSON.stringify(body)},
+  args: RequestInit = {
+    method: 'put',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  },
 ): Promise<HttpResponse<T>> {
   return await http<T>(new Request(path, args));
 }
@@ -90,9 +114,5 @@ async function http<T>(request: RequestInfo): Promise<HttpResponse<T>> {
     // may error if there is no body
     response.parsedBody = await response.json();
   } catch (ex) {}
-
-  if (!response.ok) {
-    throw new Error(response.statusText);
-  }
   return response;
 }
