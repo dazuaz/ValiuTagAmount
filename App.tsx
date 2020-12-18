@@ -12,75 +12,30 @@
  */
 
 import React from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  View,
-  Text,
-  StatusBar,
-  Button,
-} from 'react-native';
+import {SafeAreaView, StatusBar} from 'react-native';
 
-import {Colors} from './components/Theme';
-import ValiuLogo from './assets/logo_valiu.svg';
-import TagsList from './components/TagList';
-import useTagsService from './components/useTagsService';
-import {removeTag} from './utils/TagsApi';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
+import HomeScreen from './screens/HomeScreen';
+import NumpadScreen from './screens/NumpadScreen';
+import {RootStackParamList} from './types';
+
+const Stack = createStackNavigator<RootStackParamList>();
 
 const App = () => {
+  // Only used for demo, should be replaced by react-navigation or similar
+
   return (
-    <>
+    <NavigationContainer>
       <StatusBar barStyle="dark-content" />
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.header}>
-          <View
-            style={{
-              paddingHorizontal: 24,
-              alignSelf: 'flex-end',
-            }}>
-            <Text style={styles.headingText}>Amount Tags</Text>
-          </View>
-          <View
-            style={{
-              paddingHorizontal: 24,
-            }}>
-            <ValiuLogo width="106" height="40" />
-          </View>
-        </View>
-        <View style={styles.body}>
-          <TagListFromService />
-        </View>
-        <Button title="Create amount tag" onPress={() => {}} />
+      <SafeAreaView style={{flex: 1}}>
+        <Stack.Navigator screenOptions={{headerShown: false}}>
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="Numpad" component={NumpadScreen} />
+        </Stack.Navigator>
       </SafeAreaView>
-    </>
+    </NavigationContainer>
   );
 };
 
-const TagListFromService = () => {
-  const {state, dispatch} = useTagsService();
-  const handleRemoveTag = async (id: string) => {
-    dispatch({type: 'REMOVE_TAG', payload: id}); //remove on client
-    await removeTag(id); //remove on server TODO: handle failure
-  };
-  return <TagsList tags={state.tags} handleRemoveTag={handleRemoveTag} />;
-};
-
-const styles = StyleSheet.create({
-  safeArea: {flex: 1},
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 12,
-    paddingVertical: 12,
-  },
-  body: {
-    paddingHorizontal: 24,
-    flex: 1,
-  },
-  headingText: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: Colors.black,
-  },
-});
 export default App;

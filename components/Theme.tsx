@@ -1,9 +1,28 @@
 import React from 'react';
-import Svg, {Circle} from 'react-native-svg';
-import {Pressable, PressableProps, Text} from 'react-native';
+import Svg, {Circle, SvgProps} from 'react-native-svg';
+import {Pressable, PressableProps, StyleSheet, Text} from 'react-native';
+import Logo from '../assets/logo_valiu.svg';
+import ArrowLeftSvg from '../assets/arrow_left.svg';
 
+// Valiu logo aspec ratio: width="106"/height="40"
+export const ValiuLogo: React.FC<SvgProps> = (props) => (
+  <Logo
+    height={props.width ? +props.width * (40 / 106) : undefined}
+    width={props.height ? +props.height * (106 / 40) : undefined}
+    {...props}
+  />
+);
+export const ArrowLeft: React.FC<SvgProps> = (props) => (
+  <ArrowLeftSvg
+    height={props.width ? +props.width : 20}
+    width={props.height ? +props.height : 20}
+    {...props}
+  />
+);
+export const HEADER_HEIGHT = 100;
 export const Colors = {
-  primary: '#1292B4',
+  primary: '#4953CF',
+  secondary: '#22354C',
   white: '#FFF',
   lighter: '#F3F3F3',
   light: '#DAE1E7',
@@ -34,3 +53,43 @@ export const Button: React.FC<PressableProps> = ({children, ...rest}) => {
     </Pressable>
   );
 };
+
+const styleJoiner = (...arg: any) => StyleSheet.flatten(arg);
+export const ButtonPrimary: React.FC<PressableProps> = ({
+  children,
+  ...rest
+}) => {
+  return (
+    <Pressable
+      {...rest}
+      style={styleJoiner(primaryButtonStyles.pressable, rest.style)}>
+      {({pressed}) => (
+        <Text
+          style={{
+            color: pressed ? Colors.light : Colors.white,
+            fontSize: 18,
+            fontWeight: '600',
+          }}>
+          {children}
+        </Text>
+      )}
+    </Pressable>
+  );
+};
+
+const primaryButtonStyles = StyleSheet.create({
+  pressable: {
+    backgroundColor: Colors.primary,
+    alignItems: 'center',
+    paddingVertical: 20,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+});

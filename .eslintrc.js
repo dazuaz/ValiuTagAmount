@@ -1,9 +1,9 @@
 module.exports = {
   root: true,
-  extends: '@react-native-community',
+  extends: ['@react-native-community', 'plugin:react-hooks/recommended'],
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint'],
   rules: {
-    'react-native/no-inline-styles': false,
+    'react-native/no-inline-styles': 0,
   },
 };

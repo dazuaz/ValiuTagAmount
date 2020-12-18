@@ -6,3 +6,8 @@ export interface Tag {
   created_at?: string;
   updated_at?: string;
 }
+
+export type RootStackParamList = {
+  Home: undefined;
+  Numpad: {tag: Tag} | undefined;
+};

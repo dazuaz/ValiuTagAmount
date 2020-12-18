@@ -1,26 +1,37 @@
-import {useEffect, useReducer} from 'react';
+import {useEffect, useReducer, useMemo} from 'react';
 import {SocketService} from '../utils/SocketService';
 import {Tag} from '../types';
-import {getAllTags} from '../utils/TagsApi';
 
+export enum Status {
+  Idle = 'idle',
+  Loading = 'loading',
+  Loaded = 'loaded',
+  Error = 'error',
+}
 interface ServiceState {
   tags: Tag[];
-  isLoading: boolean;
+  status: Status;
 }
 interface ServiceAction {
   payload: any;
   type: string;
 }
-
 type Reducer<S, A> = (prevState: S, action: A) => S;
 
+/**
+ * useTagsService hook
+ *
+ * It calls the useReducer hook to
+ */
 const useTagsService = () => {
   const initialState: ServiceState = {
     tags: [],
-    isLoading: false,
+    status: Status.Idle,
   };
   const reducer: Reducer<ServiceState, ServiceAction> = (state, action) => {
     switch (action.type) {
+      case 'UPDATE_STATUS':
+        return {...state, status: action.payload};
       case 'ADD_TAG':
         return {...state, tags: [action.payload, ...state.tags]};
       case 'REPLACE_TAG':
@@ -46,7 +57,7 @@ const useTagsService = () => {
           return {...state};
         }
       case 'RESET_TAGS':
-        return {...state, tags: action.payload};
+        return {...state, tags: action.payload, status: Status.Loaded};
       default:
         return state;
     }
@@ -54,16 +65,8 @@ const useTagsService = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   // Subscribe to socket events
-  const service = new SocketService();
+  const service = useMemo(() => new SocketService(), []);
   useEffect(() => {
-    const initialLoad = async () => {
-      // const result = await fetch('http://localhost:3000/api/tags');
-      // const json = await result.json();
-      const result = await getAllTags();
-      // console.log(json.data);
-      dispatch({type: 'RESET_TAGS', payload: result.parsedBody?.data});
-    };
-    initialLoad();
     service.init();
     // TODO use memoized callbacks
     service.onAddTag().subscribe((t: Tag) => {
@@ -79,7 +82,7 @@ const useTagsService = () => {
       console.log('disconnect');
       service.disconnect();
     };
-  }, []);
+  }, [service]);
 
   return {state, dispatch};
 };
