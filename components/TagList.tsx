@@ -7,39 +7,35 @@ import {
   RefreshControl,
 } from 'react-native';
 import {Status, useTagListState} from './TagListContext';
-import {Button, CircleSvg, HEADER_HEIGHT, Colors} from './Theme';
+import {ButtonTag, CircleSvg, HEADER_HEIGHT, Colors} from './Theme';
+import {CustomMasker} from '../utils/CustomMasker';
 
 type ViewCurrencyProps = {
   currency: string;
 };
-const formatter = new Intl.NumberFormat('es-CO', {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
 
-const ViewCurrency: React.FC<ViewCurrencyProps> = ({currency}) => {
-  return (
-    <Animated.View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        flex: 1,
-      }}>
-      <View style={{width: 20}} />
-      <View style={{flex: 1}}>
-        <Text
-          style={{
-            fontVariant: ['tabular-nums'],
-            fontSize: 24,
-            textAlign: 'right',
-          }}>
-          {currency}
-        </Text>
-      </View>
-      <View style={{width: 40}} />
-    </Animated.View>
-  );
-};
+const formatter = new CustomMasker();
+
+const ViewCurrency: React.FC<ViewCurrencyProps> = ({currency}) => (
+  <Animated.View
+    style={{
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+    }}>
+    <View style={{width: 20}} />
+    <View style={{flex: 1}}>
+      <Text
+        style={{
+          fontVariant: ['tabular-nums'],
+          fontSize: 20,
+        }}>
+        {currency}
+      </Text>
+    </View>
+    <View style={{width: 40}} />
+  </Animated.View>
+);
 
 interface TagListItemProps {
   tag: Tag;
@@ -102,15 +98,15 @@ const TagListItem: React.FC<TagListItemProps> = ({
       <View style={[{alignItems: 'center', justifyContent: 'center'}]}>
         <CircleSvg color={tag.color} />
       </View>
-      <ViewCurrency currency={formatter.format(+tag.title)} />
+      <ViewCurrency currency={formatter.mask(tag.title)} />
       <View
         style={{
           flexDirection: 'row',
           alignItems: 'center',
         }}>
-        <Button onPress={() => edit()}>Edit</Button>
+        <ButtonTag onPress={() => edit()}>Edit</ButtonTag>
         <View style={{width: 6}} />
-        <Button onPress={() => _delete()}>Delete</Button>
+        <ButtonTag onPress={() => _delete()}>Delete</ButtonTag>
       </View>
     </Animated.View>
   );
@@ -181,7 +177,6 @@ const TagsList: React.FC<TagsListProps> = ({
         />
       }
       ListEmptyComponent={<EmptyList state={state.status} />}
-      scrollEventThrottle={16}
       renderItem={_renderTag}
       keyExtractor={(tag) => tag._id}
     />

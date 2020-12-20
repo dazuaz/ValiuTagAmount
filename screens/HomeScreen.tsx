@@ -28,7 +28,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
   // the offset Animated.Value is passed down to the TagsList FlatList onScroll event
   const offset = React.useRef(new Animated.Value(0)).current;
 
-  // It would be simpler to modify the height of the container but it is not yet supported by useNativeDrive *
+  // It would be simpler to modify the height of the container but it is not supported by useNativeDrive *
   // Translating looks good on iOS simulator, but since we are translating outside of the safeview,
   // I advice testing on more real devices
   // * https://github.com/facebook/react-native/blob/c3d072955024824d7ff6113fc9f642d25c462f16/Libraries/Animated/src/NativeAnimatedHelper.js#L186
@@ -81,7 +81,7 @@ type AnimatedHeaderTextProps = {
 const AnimatedHeaderText: React.FC<AnimatedHeaderTextProps> = ({offset}) => {
   const [travelDistance, setTravelDistance] = React.useState(0);
 
-  // useMemo to avoid recalling when we set the travelDistance
+  // useMemo to avoid recalculating when we set the travelDistance
   const scaleTitle = React.useMemo(
     () =>
       offset.interpolate({
@@ -100,7 +100,6 @@ const AnimatedHeaderText: React.FC<AnimatedHeaderTextProps> = ({offset}) => {
       }),
     [offset],
   );
-
   const titleTranslateX = offset.interpolate({
     inputRange: [0, HEADER_HEIGHT],
     outputRange: [0, travelDistance],
@@ -117,18 +116,15 @@ const AnimatedHeaderText: React.FC<AnimatedHeaderTextProps> = ({offset}) => {
       ],
     },
   ];
-  const findDimesions = (layout: LayoutRectangle) => {
+  const findTravelDistance = (layout: LayoutRectangle) => {
     const {x, width} = layout;
-    return windowWidth / 2 - (width / 2 + x);
+    setTravelDistance(windowWidth / 2 - (width / 2 + x));
   };
-
   return (
     <Animated.Text
-      onLayout={(event) =>
-        setTravelDistance(findDimesions(event.nativeEvent.layout))
-      }
+      onLayout={(event) => findTravelDistance(event.nativeEvent.layout)}
       style={animatedHeaderTitle}>
-      Amount Tags
+      Amount tags
     </Animated.Text>
   );
 };
@@ -157,6 +153,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     paddingHorizontal: CONTENT_PADDING,
   },
+
   headerTitle: {
     fontSize: 24,
     fontWeight: '600',

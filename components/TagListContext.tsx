@@ -25,8 +25,8 @@ export type ServiceState = {
   lastReplacedId: string;
   refreshing: boolean;
 };
-type ServiceAction = {payload: any; type: string};
-type Dispatch = (action: ServiceAction) => void;
+type ServiceAction = {payload: any; type: ActionTypes};
+export type Dispatch = (action: ServiceAction) => void;
 type TagListProviderProps = {children: React.ReactNode};
 
 export const initialState: ServiceState = {
@@ -61,7 +61,7 @@ export const reducer: React.Reducer<ServiceState, ServiceAction> = (
         const index = draft.tags.findIndex(
           (tag) => tag._id === action.payload._id,
         );
-        if (index !== -1) {
+        if (index === -1) {
           draft.lastReplacedId = action.payload._id;
           draft.tags.unshift(action.payload);
         }
@@ -124,13 +124,13 @@ export const TagListProvider: React.FC<TagListProviderProps> = ({children}) => {
   React.useEffect(() => {
     service.init();
     const onAddSub = service.onAddTag().subscribe((t: Tag) => {
-      dispatch({type: 'ADD_TAG_SAFE', payload: t});
+      dispatch({type: ActionTypes.ADD_TAG_SAFE, payload: t});
     });
     const onModSub = service.onModifyTag().subscribe((t: Tag) => {
-      dispatch({type: 'MODIFY_TAG', payload: t});
+      dispatch({type: ActionTypes.MODIFY_TAG, payload: t});
     });
     const onRemSub = service.onRemoveTag().subscribe((id: string) => {
-      dispatch({type: 'REMOVE_TAG_BY_ID', payload: id});
+      dispatch({type: ActionTypes.REMOVE_TAG_BY_ID, payload: id});
     });
     return () => {
       onAddSub.unsubscribe();

@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import 'react-native-gesture-handler/jestSetup';
 // https://reactnavigation.org/docs/testing/
 

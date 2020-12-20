@@ -45,7 +45,7 @@ export const Colors = {
   black: '#000',
 };
 
-export const Button: React.FC<PressableProps> = ({children, ...rest}) => {
+export const ButtonTag: React.FC<PressableProps> = ({children, ...rest}) => {
   return (
     <Pressable
       {...rest}
