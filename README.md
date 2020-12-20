@@ -32,8 +32,7 @@ On the other hand, when the list scrolls, and begins to slide, the header must b
 1. List 1.000 elements without lag in the interface.
 
 ### Backend connections location
-
-[https://github.com/macortesn/valiu-tags-backend](https://github.com/macortesn/valiu-tags-backend)
+[https://github.com/dazuaz/valiu-tags-backend](https://github.com/dazuaz/valiu-tags-backend)
 
 ### Enviroment setup
 
