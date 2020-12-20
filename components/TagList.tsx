@@ -1,4 +1,4 @@
-import React, {useCallback, useRef} from 'react';
+import * as React from 'react';
 import {
   ListRenderItem,
   Text,
@@ -6,7 +6,6 @@ import {
   Animated,
   RefreshControl,
 } from 'react-native';
-import {Tag} from '../types';
 import {Status, useTagListState} from './TagListContext';
 import {Button, CircleSvg, HEADER_HEIGHT, Colors} from './Theme';
 
@@ -55,7 +54,7 @@ const TagListItem: React.FC<TagListItemProps> = ({
   isFocus,
 }) => {
   // Start the opacity at 0
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = React.useRef(new Animated.Value(0)).current;
 
   /**
    * Helper function for animating the item
@@ -63,7 +62,7 @@ const TagListItem: React.FC<TagListItemProps> = ({
    * @param delay - how long the animation should last (ms)
    * @param callback - callback to be called when the animation finishes
    */
-  const _animateItem = useCallback(
+  const _animateItem = React.useCallback(
     (
       appear: boolean = true,
       duration: number = 400,
@@ -139,9 +138,9 @@ const EmptyList: React.FC<{state: Status}> = ({state}) => {
   );
 };
 type TagsListProps = {
-  onEdit: Function;
-  onDelete: Function;
-  onRefresh: Function;
+  onEdit: (tag: Tag) => void;
+  onDelete: (tag: Tag, index: number) => void;
+  onRefresh: () => void;
   offset: Animated.Value;
 };
 const TagsList: React.FC<TagsListProps> = ({
@@ -152,11 +151,11 @@ const TagsList: React.FC<TagsListProps> = ({
 }) => {
   const state = useTagListState();
 
-  const _renderTag: ListRenderItem<Tag> = ({item: tag}) => (
+  const _renderTag: ListRenderItem<Tag> = ({item: tag, index}) => (
     <TagListItem
       tag={tag}
       isFocus={tag._id === state.lastReplacedId}
-      remove={() => onDelete(tag._id)}
+      remove={() => onDelete(tag, index)}
       edit={() => onEdit(tag)}
     />
   );

@@ -1,6 +1,6 @@
-import React from 'react';
+import * as React from 'react';
 import {Dimensions, Pressable, Text, View, PressableProps} from 'react-native';
-import {ActionTypes, useCurrencyDispatch} from './CurrencyContext';
+import {ActionTypes, useNumpadDispatch} from './NumpadContext';
 import {Backspace, Colors} from './Theme';
 
 interface PadProps extends PressableProps {
@@ -14,7 +14,7 @@ const Pad: React.FC<PadProps> = ({
   children,
   ...rest
 }) => {
-  const dispatch = useCurrencyDispatch();
+  const dispatch = useNumpadDispatch();
 
   return (
     <Col>
@@ -33,7 +33,7 @@ const Pad: React.FC<PadProps> = ({
 };
 const windowHeight = Dimensions.get('window').height;
 
-const NumpadDigits = () => {
+const NumpadDigits: React.FC = () => {
   const Row: React.FC = ({children}) => (
     <View
       style={{

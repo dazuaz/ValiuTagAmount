@@ -1,6 +1,5 @@
 /**
- * React Native App for Job Application @valiu
- * @see https://www.notion.so/Test-for-Senior-React-Native-developer-1679db9b7aec42c0af613227b3ca0e98
+ * React Native App for a coding exercise.
  *
  * Based on Sample React Native App
  * https://github.com/facebook/react-native
@@ -11,17 +10,16 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 import {SafeAreaView, StatusBar} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import HomeScreen from './screens/HomeScreen';
 import NumpadScreen from './screens/NumpadScreen';
-import {RootStackParamList} from './types';
 import {TagListProvider} from './components/TagListContext';
 const Stack = createStackNavigator<RootStackParamList>();
 
-const App = () => (
+const App: React.FC = () => (
   <NavigationContainer>
     <StatusBar barStyle="dark-content" />
     <TagListProvider>

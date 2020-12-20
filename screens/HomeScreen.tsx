@@ -1,5 +1,11 @@
-import React, {useRef} from 'react';
-import {Animated, StyleSheet, View} from 'react-native';
+import * as React from 'react';
+import {
+  Animated,
+  StyleSheet,
+  View,
+  Dimensions,
+  LayoutRectangle,
+} from 'react-native';
 import {TagListFromService} from '../components/TagListFromService';
 import {StackNavigationProp} from '@react-navigation/stack';
 
@@ -8,18 +14,19 @@ import {
   ValiuLogo,
   ButtonPrimary,
   HEADER_HEIGHT,
+  CONTENT_PADDING,
 } from '../components/Theme';
-import {RootStackParamList, Tag} from '../types';
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
 type HomeScreenProps = {
   navigation: HomeScreenNavigationProp;
 };
+const windowWidth = Dimensions.get('window').width;
 
 const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
   // the offset Animated.Value is passed down to the TagsList FlatList onScroll event
-  const offset = useRef(new Animated.Value(0)).current;
+  const offset = React.useRef(new Animated.Value(0)).current;
 
   // It would be simpler to modify the height of the container but it is not yet supported by useNativeDrive *
   // Translating looks good on iOS simulator, but since we are translating outside of the safeview,
@@ -32,24 +39,14 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
   });
   const containerOffset = offset.interpolate({
     inputRange: [0, HEADER_HEIGHT],
-    outputRange: [0, -30],
+    outputRange: [0, -40],
     extrapolate: 'clamp',
   });
-  const titleOffset = offset.interpolate({
-    inputRange: [0, HEADER_HEIGHT],
-    outputRange: [0, 15],
-    extrapolate: 'clamp',
-  });
+
   const animatedHeader = [
     styles.header,
     {
       transform: [{translateY: containerOffset}],
-    },
-  ];
-  const animatedHeaderTitle = [
-    styles.headerTitle,
-    {
-      transform: [{translateY: titleOffset}],
     },
   ];
 
@@ -57,7 +54,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
     <View style={styles.homeScreen}>
       <View style={styles.headerContainer}>
         <Animated.View style={animatedHeader}>
-          <Animated.Text style={animatedHeaderTitle}>Amount Tags</Animated.Text>
+          <AnimatedHeaderText offset={offset} />
           <Animated.View style={{opacity: fadeLogo}}>
             <ValiuLogo height={40} />
           </Animated.View>
@@ -77,7 +74,64 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
     </View>
   );
 };
+type AnimatedHeaderTextProps = {
+  offset: Animated.Value;
+};
 
+const AnimatedHeaderText: React.FC<AnimatedHeaderTextProps> = ({offset}) => {
+  const [travelDistance, setTravelDistance] = React.useState(0);
+
+  // useMemo to avoid recalling when we set the travelDistance
+  const scaleTitle = React.useMemo(
+    () =>
+      offset.interpolate({
+        inputRange: [0, HEADER_HEIGHT],
+        outputRange: [1, 0.75],
+        extrapolate: 'clamp',
+      }),
+    [offset],
+  );
+  const titleOffsetY = React.useMemo(
+    () =>
+      offset.interpolate({
+        inputRange: [0, HEADER_HEIGHT],
+        outputRange: [0, 25],
+        extrapolate: 'clamp',
+      }),
+    [offset],
+  );
+
+  const titleTranslateX = offset.interpolate({
+    inputRange: [0, HEADER_HEIGHT],
+    outputRange: [0, travelDistance],
+    extrapolate: 'clamp',
+  });
+
+  const animatedHeaderTitle = [
+    styles.headerTitle,
+    {
+      transform: [
+        {translateY: titleOffsetY},
+        {translateX: titleTranslateX},
+        {scale: scaleTitle},
+      ],
+    },
+  ];
+  const findDimesions = (layout: LayoutRectangle) => {
+    const {x, width} = layout;
+    return windowWidth / 2 - (width / 2 + x);
+  };
+
+  return (
+    <Animated.Text
+      onLayout={(event) =>
+        setTravelDistance(findDimesions(event.nativeEvent.layout))
+      }
+      style={animatedHeaderTitle}>
+      Amount Tags
+    </Animated.Text>
+  );
+};
 const styles = StyleSheet.create({
   homeScreen: {
     flex: 1,
@@ -101,7 +155,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: Colors.white,
-    paddingHorizontal: 24,
+    paddingHorizontal: CONTENT_PADDING,
   },
   headerTitle: {
     fontSize: 24,

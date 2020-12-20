@@ -1,13 +1,6 @@
-import React, {
-  useEffect,
-  useReducer,
-  useMemo,
-  Reducer,
-  createContext,
-  useContext,
-} from 'react';
+import * as React from 'react';
 import {SocketService} from '../utils/SocketService';
-import {Tag} from '../types';
+import produce from 'immer';
 
 export enum Status {
   Idle = 'idle',
@@ -19,9 +12,12 @@ export enum ActionTypes {
   UPDATE_STATUS = 'UPDATE_STATUS',
   SET_REFRESHING = 'SET_REFRESHING',
   ADD_TAG = 'ADD_TAG',
-  REPLACE_TAG = 'REPLACE_TAG',
+  ADD_TAG_SAFE = 'ADD_TAG_SAFE',
+  MODIFY_TAG = 'MODIFY_TAG',
   REMOVE_TAG = 'REMOVE_TAG',
+  REMOVE_TAG_BY_ID = 'REMOVE_TAG_BY_ID',
   RESET_TAGS = 'RESET_TAGS',
+  RESTORE_TAG = 'RESTORE_TAG',
 }
 export type ServiceState = {
   tags: Tag[];
@@ -39,54 +35,73 @@ export const initialState: ServiceState = {
   lastReplacedId: '',
   refreshing: false,
 };
-const TagListStateContext = createContext<ServiceState | undefined>(undefined);
-const TagListDispatchContext = createContext<Dispatch | undefined>(undefined);
-export const reducer: Reducer<ServiceState, ServiceAction> = (
+const TagListStateContext = React.createContext<ServiceState | undefined>(
+  undefined,
+);
+const TagListDispatchContext = React.createContext<Dispatch | undefined>(
+  undefined,
+);
+export const reducer: React.Reducer<ServiceState, ServiceAction> = (
   state,
   action,
 ) => {
+  // https://immerjs.github.io/immer/docs/update-patterns
   switch (action.type) {
     case 'UPDATE_STATUS':
       return {...state, status: action.payload};
     case 'SET_REFRESHING':
       return {...state, refreshing: action.payload};
     case 'ADD_TAG':
-      return {
-        ...state,
-        tags: [action.payload, ...state.tags],
-      };
-    case 'REPLACE_TAG':
-      return {
-        ...state,
-        tags: state.tags.map((ele) =>
-          ele._id === action.payload._id ? action.payload : ele,
-        ),
-        lastReplacedId: action.payload._id,
-      };
+      return produce(state, (draft) => {
+        draft.lastReplacedId = action.payload._id;
+        draft.tags.unshift(action.payload);
+      });
+    case 'ADD_TAG_SAFE':
+      return produce(state, (draft) => {
+        const index = draft.tags.findIndex(
+          (tag) => tag._id === action.payload._id,
+        );
+        if (index !== -1) {
+          draft.lastReplacedId = action.payload._id;
+          draft.tags.unshift(action.payload);
+        }
+      });
+    case 'MODIFY_TAG':
+      return produce(state, (draft) => {
+        const index = draft.tags.findIndex(
+          (tag) => tag._id === action.payload._id,
+        );
+        if (index !== -1) {
+          draft.lastReplacedId = action.payload._id;
+          draft.tags[index].title = action.payload.title;
+          draft.tags[index].color = action.payload.color;
+        }
+      });
     case 'REMOVE_TAG':
-      const removeAt = state.tags.findIndex(
-        (ele) => ele._id === action.payload,
-      );
-      if (removeAt !== -1) {
-        return {
-          ...state,
-          tags: [
-            ...state.tags.slice(0, removeAt),
-            ...state.tags.slice(removeAt + 1),
-          ],
-        };
-      } else {
-        return {...state};
-      }
+      return produce(state, (draft) => {
+        draft.tags.splice(action.payload, 1);
+      });
+    case 'REMOVE_TAG_BY_ID':
+      return produce(state, (draft) => {
+        const index = draft.tags.findIndex((tag) => tag._id === action.payload);
+        if (index !== -1) {
+          draft.tags.splice(index, 1);
+        }
+      });
+    case 'RESTORE_TAG':
+      return produce(state, (draft) => {
+        draft.tags.splice(action.payload.index, 0, action.payload.tag);
+      });
+
     case 'RESET_TAGS':
       return {...state, tags: action.payload, status: Status.Loaded};
     default:
-      return state;
+      return {...state};
   }
 };
 
 export function useTagListState() {
-  const context = useContext(TagListStateContext);
+  const context = React.useContext(TagListStateContext);
   if (context === undefined) {
     throw new Error('useTagListState must be used within a TagListProvider');
   }
@@ -94,7 +109,7 @@ export function useTagListState() {
 }
 
 export function useTagListDispatch() {
-  const context = useContext(TagListDispatchContext);
+  const context = React.useContext(TagListDispatchContext);
   if (context === undefined) {
     throw new Error('useTagListDispatch must be used within a TagListProvider');
   }
@@ -102,23 +117,25 @@ export function useTagListDispatch() {
 }
 
 export const TagListProvider: React.FC<TagListProviderProps> = ({children}) => {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = React.useReducer(reducer, initialState);
   // subscribes to the sockets service observers.
-  const service = useMemo(() => new SocketService(), []);
+  const service = React.useMemo(() => new SocketService(), []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     service.init();
-    console.log('subscribed to services');
-    service.onAddTag().subscribe((t: Tag) => {
-      dispatch({type: 'ADD_TAG', payload: t});
+    const onAddSub = service.onAddTag().subscribe((t: Tag) => {
+      dispatch({type: 'ADD_TAG_SAFE', payload: t});
     });
-    service.onModifyTag().subscribe((t: Tag) => {
-      dispatch({type: 'REPLACE_TAG', payload: t});
+    const onModSub = service.onModifyTag().subscribe((t: Tag) => {
+      dispatch({type: 'MODIFY_TAG', payload: t});
     });
-    service.onRemoveTag().subscribe((id: string) => {
-      dispatch({type: 'REMOVE_TAG', payload: id});
+    const onRemSub = service.onRemoveTag().subscribe((id: string) => {
+      dispatch({type: 'REMOVE_TAG_BY_ID', payload: id});
     });
     return () => {
+      onAddSub.unsubscribe();
+      onModSub.unsubscribe();
+      onRemSub.unsubscribe();
       service.disconnect();
     };
   }, [service]);

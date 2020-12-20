@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import Svg, {Circle, SvgProps} from 'react-native-svg';
 import {Pressable, PressableProps, StyleSheet, Text} from 'react-native';
 import Logo from '../assets/logo_valiu.svg';
@@ -33,6 +33,7 @@ export const CircleSvg: React.FC<SvgProps> = ({color}) => (
   </Svg>
 );
 export const HEADER_HEIGHT = 100;
+export const CONTENT_PADDING = 24;
 export const Colors = {
   primary: '#4953CF',
   secondary: '#22354C',

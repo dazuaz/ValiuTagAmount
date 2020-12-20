@@ -1,31 +1,60 @@
-import React from 'react';
+import * as React from 'react';
 import {CustomMasker} from '../utils/CustomMasker';
-import {createTag, modifyTag} from '../utils/TagsApi';
-import {useCurrencyState} from './CurrencyContext';
+import {ActionTypes, useTagListDispatch} from './TagListContext';
+import {useNumpadState} from './NumpadContext';
 import {ButtonPrimary} from './Theme';
 import randomColor from 'randomcolor';
-import {Tag} from '../types';
 
 const masker = new CustomMasker();
+const API_BASE_URL = 'http://localhost:3000/api/tags';
+type ValiuResponse<T> = {
+  data: T;
+  message: string;
+  status: string;
+};
 
 type NumpadButtonProps = {
   editTag?: Tag;
   goBack: () => void;
 };
-const NumpadButton: React.FC<NumpadButtonProps> = ({editTag, goBack}) => {
-  const state = useCurrencyState();
 
+const NumpadButton: React.FC<NumpadButtonProps> = ({editTag, goBack}) => {
+  const state = useNumpadState();
+  const dispatch = useTagListDispatch();
   const handleAddOrEditTag = async () => {
     // Grab InputText number
     const tagTitle = masker.unmask(state);
 
     if (editTag?._id) {
       // Its edit action
-      await modifyTag(editTag._id, {...editTag, title: tagTitle});
+      dispatch({type: 'MODIFY_TAG', payload: editTag});
+      const response = await fetch(API_BASE_URL + '/' + editTag._id, {
+        method: 'put',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({...editTag, title: tagTitle}),
+      });
+      const body: ValiuResponse<Tag> = await response.json(); //remove on server
+      if (body.status !== '200') {
+        // rollback
+      }
     } else {
       if (tagTitle) {
         // Its add action
-        await createTag(tagTitle, randomColor());
+        const response = await fetch(API_BASE_URL, {
+          method: 'post',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({title: tagTitle, color: randomColor()}),
+        });
+        const body: ValiuResponse<Tag> = await response.json(); //remove on server
+        if (body.status === '200') {
+          dispatch({type: ActionTypes.ADD_TAG, payload: body.data});
+        }
       }
     }
     goBack();

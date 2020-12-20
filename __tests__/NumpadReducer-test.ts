@@ -2,9 +2,9 @@
  * @format
  */
 
-import {ActionTypes, reducer} from '../components/CurrencyContext';
+import {ActionTypes, reducer} from '../components/NumpadContext';
 // Note: test renderer must be required after react-native.
-describe('currency reducer', () => {
+describe('numpad reducer', () => {
   describe('INSERT_NUMBER', () => {
     const addDigit = (value: string, digit: string) =>
       reducer(value, {type: ActionTypes.INSERT_NUMBER, payload: digit});

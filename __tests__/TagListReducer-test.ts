@@ -9,8 +9,6 @@ import {
   Status,
   initialState,
 } from '../components/TagListContext';
-import {Tag} from '../types';
-// Note: test renderer must be required after react-native.
 
 const tag: Tag = {
   _id: '5fdc22180a56315d16b4f704',
@@ -19,9 +17,15 @@ const tag: Tag = {
 };
 const snapshot: ServiceState = {
   ...initialState,
+  lastReplacedId: tag._id,
   tags: [tag],
 };
 const twoTags = [
+  {...tag, _id: uniqueID() + ''},
+  {...tag, _id: uniqueID() + ''},
+];
+const threeTags = [
+  {...tag, _id: uniqueID() + ''},
   {...tag, _id: uniqueID() + ''},
   {...tag, _id: uniqueID() + ''},
 ];
@@ -34,23 +38,23 @@ const editedTag: Tag = {
 const snapshotMultiple: ServiceState = {
   ...initialState,
   status: Status.Loaded,
-  tags: [...twoTags, tag],
+  tags: [...twoTags, tag, ...threeTags],
 };
 const snapshotMultipleDeleted: ServiceState = {
   ...initialState,
   status: Status.Loaded,
-  tags: [...twoTags],
+  tags: [...twoTags, ...threeTags],
 };
 const snapshotMultipleEdited: ServiceState = {
   ...initialState,
   status: Status.Loaded,
   lastReplacedId: editedTag._id,
-  tags: [...twoTags, editedTag],
+  tags: [...twoTags, editedTag, ...threeTags],
 };
 const snapshotMultipleReplaced: ServiceState = {
   ...initialState,
   status: Status.Loaded,
-  tags: [...twoTags, editedTag],
+  tags: [...twoTags, editedTag, ...threeTags],
 };
 function uniqueID() {
   return Math.floor(Math.random() * Date.now());
@@ -74,17 +78,26 @@ describe('tagList reducer', () => {
     const removeTag = (prevState: ServiceState, payload: string) =>
       reducer(prevState, {type: ActionTypes.REMOVE_TAG, payload});
 
-    it('Removes a tag giving its ID', () => {
-      expect(removeTag(snapshotMultiple, tag._id)).toEqual(
+    it('Removes a tag giving its Index', () => {
+      expect(removeTag(snapshotMultiple, '2')).toEqual(snapshotMultipleDeleted);
+    });
+  });
+  describe(ActionTypes.REMOVE_TAG_BY_ID, () => {
+    const removeTag = (prevState: ServiceState, payload: string) =>
+      reducer(prevState, {type: ActionTypes.REMOVE_TAG_BY_ID, payload});
+
+    it('Removes a tag giving its Tag id', () => {
+      expect(removeTag(snapshotMultiple, '5fdc22180a56315d16b4f704')).toEqual(
         snapshotMultipleDeleted,
       );
     });
   });
-  describe(ActionTypes.REPLACE_TAG, () => {
-    const replaceTag = (prevState: ServiceState, payload: Tag) =>
-      reducer(prevState, {type: ActionTypes.REPLACE_TAG, payload});
+
+  describe(ActionTypes.MODIFY_TAG, () => {
+    const modifyTag = (prevState: ServiceState, payload: Tag) =>
+      reducer(prevState, {type: ActionTypes.MODIFY_TAG, payload});
     it('Edits a tag giving by extracting its ID', () => {
-      expect(replaceTag(snapshotMultiple, editedTag)).toEqual(
+      expect(modifyTag(snapshotMultiple, editedTag)).toEqual(
         snapshotMultipleEdited,
       );
     });
@@ -96,6 +109,17 @@ describe('tagList reducer', () => {
       expect(resetTags(snapshotMultiple, snapshotMultipleEdited.tags)).toEqual(
         snapshotMultipleReplaced,
       );
+    });
+  });
+  describe(ActionTypes.RESTORE_TAG, () => {
+    const restoreTag = (
+      prevState: ServiceState,
+      payload: {tag: Tag; index: string},
+    ) => reducer(prevState, {type: ActionTypes.RESTORE_TAG, payload});
+    it('Restores a tag at the given index', () => {
+      expect(
+        restoreTag(snapshotMultipleDeleted, {tag: tag, index: '2'}),
+      ).toEqual(snapshotMultiple);
     });
   });
 });

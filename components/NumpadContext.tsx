@@ -11,12 +11,12 @@ export enum ActionTypes {
 type Action = {type: ActionTypes; payload: any};
 type Dispatch = (action: Action) => void;
 type State = string;
-type CurrencyProviderProps = {children: React.ReactNode};
+type NumpadProviderProps = {children: React.ReactNode};
 
 const initialState: State = '';
 
-const CurrencyStateContext = React.createContext<State | undefined>(undefined);
-const CurrencyDispatchContext = React.createContext<Dispatch | undefined>(
+const NumpadStateContext = React.createContext<State | undefined>(undefined);
+const NumpadDispatchContext = React.createContext<Dispatch | undefined>(
   undefined,
 );
 const masker = new CustomMasker();
@@ -61,32 +61,30 @@ export const reducer: React.Reducer<State, Action> = (state, action) => {
   }
 };
 
-export function useCurrencyState() {
-  const context = React.useContext(CurrencyStateContext);
+export function useNumpadState() {
+  const context = React.useContext(NumpadStateContext);
   if (context === undefined) {
-    throw new Error('useCountState must be used within a CountProvider');
+    throw new Error('useNumpadState must be used within a NumpadProvider');
   }
   return context;
 }
 
-export function useCurrencyDispatch() {
-  const context = React.useContext(CurrencyDispatchContext);
+export function useNumpadDispatch() {
+  const context = React.useContext(NumpadDispatchContext);
   if (context === undefined) {
-    throw new Error('useCountDispatch must be used within a CountProvider');
+    throw new Error('useNumpadDispatch must be used within a NumpadProvider');
   }
   return context;
 }
 
-export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({
-  children,
-}) => {
+export const NumpadProvider: React.FC<NumpadProviderProps> = ({children}) => {
   const [state, dispatch] = React.useReducer(reducer, initialState);
 
   return (
-    <CurrencyStateContext.Provider value={state}>
-      <CurrencyDispatchContext.Provider value={dispatch}>
+    <NumpadStateContext.Provider value={state}>
+      <NumpadDispatchContext.Provider value={dispatch}>
         {children}
-      </CurrencyDispatchContext.Provider>
-    </CurrencyStateContext.Provider>
+      </NumpadDispatchContext.Provider>
+    </NumpadStateContext.Provider>
   );
 };

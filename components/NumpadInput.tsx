@@ -1,12 +1,12 @@
-import React from 'react';
+import * as React from 'react';
 import {TextInput, TextInputProps} from 'react-native';
-import {useCurrencyState} from './CurrencyContext';
+import {useNumpadState} from './NumpadContext';
 
 /**
  * CurrencyInput
  */
 const CurrencyInput: React.FC<TextInputProps> = (props) => {
-  const state = useCurrencyState();
+  const state = useNumpadState();
   return (
     <TextInput
       {...props}

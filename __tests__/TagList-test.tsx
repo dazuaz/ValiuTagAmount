@@ -3,7 +3,7 @@
  */
 
 import 'react-native';
-import React from 'react';
+import * as React from 'react';
 import TagList from '../components/TagList';
 import {Animated} from 'react-native';
 import {TagListProvider} from '../components/TagListContext';

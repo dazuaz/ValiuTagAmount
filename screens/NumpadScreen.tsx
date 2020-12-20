@@ -1,12 +1,11 @@
-import React from 'react';
+import * as React from 'react';
 import {RouteProp} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {View, Text, Pressable} from 'react-native';
 
-import {CurrencyProvider} from '../components/CurrencyContext';
+import {NumpadProvider} from '../components/NumpadContext';
 import Numpad from '../components/Numpad';
 import {Colors, ArrowLeft} from '../components/Theme';
-import {RootStackParamList} from '../types';
 
 type NumpadScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -45,12 +44,12 @@ const NumpadScreen: React.FC<NumpadScreenProps> = ({navigation, route}) => {
           </Text>
         </View>
       </View>
-      <CurrencyProvider>
+      <NumpadProvider>
         <Numpad
           goBack={() => navigation.goBack()}
           editTag={route.params?.tag}
         />
-      </CurrencyProvider>
+      </NumpadProvider>
     </View>
   );
 };

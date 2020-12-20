@@ -1,11 +1,11 @@
-import React, {useEffect} from 'react';
+import * as React from 'react';
 import {View} from 'react-native';
 import NumpadInput from './NumpadInput';
 import NumpadButton from './NumpadButton';
 import NumpadDigits from './NumpadDigits';
 import {Colors} from './Theme';
-import {ActionTypes, useCurrencyDispatch} from './CurrencyContext';
-import {Tag} from '../types';
+import {ActionTypes, useNumpadDispatch} from './NumpadContext';
+
 import {CustomMasker} from '../utils/CustomMasker';
 
 type NumpadProps = {
@@ -15,9 +15,9 @@ type NumpadProps = {
 const masker = new CustomMasker();
 
 const Numpad: React.FC<NumpadProps> = ({editTag, goBack}) => {
-  const dispatch = useCurrencyDispatch();
+  const dispatch = useNumpadDispatch();
 
-  useEffect(() => {
+  React.useEffect(() => {
     // if navigating from and edit tag, we update the input and
     if (editTag?._id) {
       dispatch({
