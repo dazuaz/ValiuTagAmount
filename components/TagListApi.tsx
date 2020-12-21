@@ -1,4 +1,12 @@
-import {ActionTypes, Dispatch, Status} from './TagListContext';
+import {
+  ActionTypes as GlobalTypes,
+  Dispatch as GlobalsDispatch,
+  Status,
+} from './GlobalContext';
+import {
+  ActionTypes as TagsTypes,
+  Dispatch as TagsDispatch,
+} from './TagListContext';
 import randomColor from 'randomcolor';
 const API_BASE_URL = 'http://localhost:3000/api/tags';
 
@@ -8,34 +16,38 @@ type ValiuResponse<T> = {
   status: string;
 };
 
-export const getAllTags = async (dispatch: Dispatch) => {
+export const getAllTags = async (
+  tagsDispatch: TagsDispatch,
+  globalDispatch: GlobalsDispatch,
+) => {
   try {
-    dispatch({type: ActionTypes.UPDATE_STATUS, payload: Status.Loading});
+    globalDispatch({type: GlobalTypes.UPDATE_STATUS, payload: Status.Loading});
     const response = await fetch(API_BASE_URL);
     const body: ValiuResponse<Tag[]> = await response.json();
     if (body.status === '200') {
-      dispatch({type: ActionTypes.RESET_TAGS, payload: body.data});
+      tagsDispatch({type: TagsTypes.RESET_TAGS, payload: body.data});
     } else {
-      dispatch({type: ActionTypes.UPDATE_STATUS, payload: Status.Error});
+      globalDispatch({type: GlobalTypes.UPDATE_STATUS, payload: Status.Error});
     }
   } catch (error) {
-    dispatch({type: ActionTypes.UPDATE_STATUS, payload: Status.Error});
+    globalDispatch({type: GlobalTypes.UPDATE_STATUS, payload: Status.Error});
     throw new Error('Error connecting to the database');
   }
 };
 export const removeTag = async (
   tag: Tag,
   index: number,
-  dispatch: Dispatch,
+  tagsDispatch: TagsDispatch,
+  globalDispatch: GlobalsDispatch,
 ) => {
   try {
-    dispatch({type: ActionTypes.REMOVE_TAG, payload: index}); //remove on client
+    tagsDispatch({type: TagsTypes.REMOVE_TAG, payload: index}); //remove on client
     const response = await fetch(API_BASE_URL);
     const body: ValiuResponse<Tag> = await response.json(); //remove on server
     if (body.status !== '200') {
       // Restore TAG if server update failed
-      dispatch({type: ActionTypes.RESTORE_TAG, payload: {tag, index}});
-      dispatch({type: ActionTypes.UPDATE_STATUS, payload: Status.Error});
+      tagsDispatch({type: TagsTypes.RESTORE_TAG, payload: {tag, index}});
+      globalDispatch({type: GlobalTypes.UPDATE_STATUS, payload: Status.Error});
     }
   } catch (error) {
     throw new Error('Error connecting to the database');
@@ -44,9 +56,12 @@ export const removeTag = async (
 export const modifyTag = async (
   editTag: Tag,
   title: string,
-  dispatch: Dispatch,
+  tagsDispatch: TagsDispatch,
+  globalDispatch: GlobalsDispatch,
 ) => {
-  dispatch({type: ActionTypes.MODIFY_TAG, payload: editTag});
+  tagsDispatch({type: TagsTypes.MODIFY_TAG, payload: editTag});
+  globalDispatch({type: GlobalTypes.SET_REPlACED, payload: editTag._id});
+
   try {
     const response = await fetch(API_BASE_URL + '/' + editTag._id, {
       method: 'put',
@@ -65,7 +80,11 @@ export const modifyTag = async (
     throw new Error('Error connecting to the database');
   }
 };
-export const addTag = async (title: string, dispatch: Dispatch) => {
+export const addTag = async (
+  title: string,
+  tagsDispatch: TagsDispatch,
+  globalDispatch: GlobalsDispatch,
+) => {
   try {
     const response = await fetch(API_BASE_URL, {
       method: 'post',
@@ -78,7 +97,8 @@ export const addTag = async (title: string, dispatch: Dispatch) => {
     const body: ValiuResponse<Tag> = await response.json(); //remove on server
     if (body.status === '200') {
       // could improve performance if not dealing wtih race condition.
-      dispatch({type: ActionTypes.ADD_TAG_SAFE, payload: body.data});
+      tagsDispatch({type: TagsTypes.ADD_TAG_SAFE, payload: body.data});
+      globalDispatch({type: GlobalTypes.SET_REPlACED, payload: body.data._id});
     } else {
       throw new Error('Error from the backnend API');
     }

@@ -4,6 +4,7 @@ import {useTagListDispatch} from './TagListContext';
 import {useNumpadState} from './NumpadContext';
 import {ButtonPrimary} from './Theme';
 import {addTag, modifyTag} from './TagListApi';
+import {useGlobalDispatch} from './GlobalContext';
 
 const masker = new CustomMasker();
 
@@ -15,6 +16,7 @@ type NumpadButtonProps = {
 const NumpadButton: React.FC<NumpadButtonProps> = ({editTag, goBack}) => {
   const state = useNumpadState();
   const dispatch = useTagListDispatch();
+  const globalDispatch = useGlobalDispatch();
   const handleAddOrEditTag = async () => {
     // Grab InputText number
     const tagTitle = masker.unmask(state);
@@ -22,7 +24,7 @@ const NumpadButton: React.FC<NumpadButtonProps> = ({editTag, goBack}) => {
     if (editTag?._id) {
       // Its edit action
       try {
-        await modifyTag(editTag, tagTitle, dispatch);
+        await modifyTag(editTag, tagTitle, dispatch, globalDispatch);
         // TODO: scroll to top and go back? or message snackbar.
       } catch (error) {
         // TODO: show error message snackbar.
@@ -31,7 +33,7 @@ const NumpadButton: React.FC<NumpadButtonProps> = ({editTag, goBack}) => {
       if (tagTitle) {
         // Its add action
         try {
-          await addTag(tagTitle, dispatch);
+          await addTag(tagTitle, dispatch, globalDispatch);
         } catch (error) {
           // TODO: show error message snackbar
         }

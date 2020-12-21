@@ -6,9 +6,10 @@ import {
   Animated,
   RefreshControl,
 } from 'react-native';
-import {Status, useTagListState} from './TagListContext';
+import {useTagListState} from './TagListContext';
 import {ButtonTag, CircleSvg, HEADER_HEIGHT, Colors} from './Theme';
 import {CustomMasker} from '../utils/CustomMasker';
+import {useGlobalState, Status} from './GlobalContext';
 
 type ViewCurrencyProps = {
   currency: string;
@@ -145,12 +146,12 @@ const TagsList: React.FC<TagsListProps> = ({
   onEdit,
   offset,
 }) => {
-  const state = useTagListState();
-
+  const tags = useTagListState();
+  const global = useGlobalState();
   const _renderTag: ListRenderItem<Tag> = ({item: tag, index}) => (
     <TagListItem
       tag={tag}
-      isFocus={tag._id === state.lastReplacedId}
+      isFocus={tag._id === global.lastReplacedId}
       remove={() => onDelete(tag, index)}
       edit={() => onEdit(tag)}
     />
@@ -158,7 +159,7 @@ const TagsList: React.FC<TagsListProps> = ({
 
   return (
     <Animated.FlatList
-      data={state.tags}
+      data={tags}
       showsVerticalScrollIndicator={false}
       contentInset={{
         top: HEADER_HEIGHT,
@@ -172,11 +173,11 @@ const TagsList: React.FC<TagsListProps> = ({
       })}
       refreshControl={
         <RefreshControl
-          refreshing={state.refreshing}
+          refreshing={global.refreshing}
           onRefresh={() => onRefresh()}
         />
       }
-      ListEmptyComponent={<EmptyList state={state.status} />}
+      ListEmptyComponent={<EmptyList state={global.status} />}
       renderItem={_renderTag}
       keyExtractor={(tag) => tag._id}
     />

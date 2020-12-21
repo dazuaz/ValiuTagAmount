@@ -1,25 +1,23 @@
 /**
  * @format
  */
-
 import {
   ActionTypes,
-  reducer,
+  reducer as TagListReducer,
   ServiceState,
-  Status,
-  initialState,
 } from '../components/TagListContext';
+import produce from 'immer';
+const reducer = produce(TagListReducer);
 
+const initialState: Tag[] = [];
 const tag: Tag = {
   _id: '5fdc22180a56315d16b4f704',
   color: 'green',
   title: '20000',
 };
-const snapshot: ServiceState = {
-  ...initialState,
-  lastReplacedId: tag._id,
-  tags: [tag],
-};
+function uniqueID() {
+  return Math.floor(Math.random() * Date.now());
+}
 const twoTags = [
   {...tag, _id: uniqueID() + ''},
   {...tag, _id: uniqueID() + ''},
@@ -34,43 +32,43 @@ const editedTag: Tag = {
   color: 'blue',
   title: '30000',
 };
+const snapshot: ServiceState = [tag];
+const snapshotMultiple: ServiceState = [...twoTags, tag, ...threeTags];
+const snapshotMultipleDeleted: ServiceState = [...twoTags, ...threeTags];
+const snapshotMultipleEdited: ServiceState = [
+  ...twoTags,
+  editedTag,
+  ...threeTags,
+];
 
-const snapshotMultiple: ServiceState = {
-  ...initialState,
-  status: Status.Loaded,
-  tags: [...twoTags, tag, ...threeTags],
-};
-const snapshotMultipleDeleted: ServiceState = {
-  ...initialState,
-  status: Status.Loaded,
-  tags: [...twoTags, ...threeTags],
-};
-const snapshotMultipleEdited: ServiceState = {
-  ...initialState,
-  status: Status.Loaded,
-  lastReplacedId: editedTag._id,
-  tags: [...twoTags, editedTag, ...threeTags],
-};
-const snapshotMultipleReplaced: ServiceState = {
-  ...initialState,
-  status: Status.Loaded,
-  tags: [...twoTags, editedTag, ...threeTags],
-};
-function uniqueID() {
-  return Math.floor(Math.random() * Date.now());
-}
+const snapshotMultipleReplaced: ServiceState = [
+  ...twoTags,
+  editedTag,
+  ...threeTags,
+];
 
 describe('tagList reducer', () => {
   describe(ActionTypes.ADD_TAG, () => {
-    const addTag = (value: ServiceState, payload: any) =>
-      reducer(value, {type: ActionTypes.ADD_TAG, payload});
-
+    const addTag = (draft: ServiceState, payload: any) =>
+      reducer(draft, {type: ActionTypes.ADD_TAG, payload});
     it('Adds a tag at the beggining of the array', () => {
-      expect(addTag(initialState, tag)).toEqual(snapshot);
+      expect(addTag(initialState, tag)).toEqual([tag]);
     });
     it('Adds another tag at the beggining of not and empty array', () => {
       expect(addTag(addTag(initialState, tag), tag)).toEqual(
         addTag(snapshot, tag),
+      );
+    });
+  });
+  describe(ActionTypes.ADD_TAG_SAFE, () => {
+    const addTagSafe = (draft: ServiceState, payload: any) =>
+      reducer(draft, {type: ActionTypes.ADD_TAG_SAFE, payload});
+    it('Adds a tag at the beggining of the array', () => {
+      expect(addTagSafe(initialState, tag)).toEqual([tag]);
+    });
+    it('Adds another tag at the beggining of not and empty array', () => {
+      expect(addTagSafe(addTagSafe(initialState, tag), tag)).toEqual(
+        addTagSafe(snapshot, tag),
       );
     });
   });
@@ -105,8 +103,8 @@ describe('tagList reducer', () => {
   describe(ActionTypes.RESET_TAGS, () => {
     const resetTags = (prevState: ServiceState, payload: Tag[]) =>
       reducer(prevState, {type: ActionTypes.RESET_TAGS, payload});
-    it('Replaces state with new a new set tags', () => {
-      expect(resetTags(snapshotMultiple, snapshotMultipleEdited.tags)).toEqual(
+    it('Replaces state with a new set tags', () => {
+      expect(resetTags(snapshotMultiple, snapshotMultipleEdited)).toEqual(
         snapshotMultipleReplaced,
       );
     });

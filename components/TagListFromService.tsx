@@ -2,7 +2,8 @@ import * as React from 'react';
 import {Animated} from 'react-native';
 import {getAllTags, removeTag} from './TagListApi';
 import TagsList from './TagList';
-import {ActionTypes, useTagListDispatch} from './TagListContext';
+import {useTagListDispatch} from './TagListContext';
+import {useGlobalDispatch, ActionTypes} from './GlobalContext';
 
 type TagListFromServiceProps = {
   offset: Animated.Value;
@@ -13,31 +14,33 @@ export const TagListFromService: React.FC<TagListFromServiceProps> = ({
   offset,
   onEdit,
 }) => {
-  const dispatch = useTagListDispatch();
+  const tagsDispatch = useTagListDispatch();
+  const globalDispatch = useGlobalDispatch();
 
   const handleInitialLoad = React.useCallback(async () => {
     try {
-      await getAllTags(dispatch);
+      await getAllTags(tagsDispatch, globalDispatch);
     } catch (error) {}
-  }, [dispatch]);
+  }, [tagsDispatch, globalDispatch]);
+
   React.useEffect(() => {
     handleInitialLoad();
   }, [handleInitialLoad]);
 
   const handleRemoveTag = async (tag: Tag, index: number) => {
     try {
-      await removeTag(tag, index, dispatch);
+      await removeTag(tag, index, tagsDispatch, globalDispatch);
     } catch (error) {}
   };
 
   const handleRefresh = async () => {
-    dispatch({type: ActionTypes.SET_REFRESHING, payload: true});
+    globalDispatch({type: ActionTypes.SET_REFRESHING, payload: true});
     try {
       // TODO: Add paginated load, and load more using a stream/observable Set.
       // Need server paginated feature.
       await handleInitialLoad();
     } catch (error) {}
-    dispatch({type: ActionTypes.SET_REFRESHING, payload: false});
+    globalDispatch({type: ActionTypes.SET_REFRESHING, payload: false});
   };
 
   return (
