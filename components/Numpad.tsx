@@ -18,7 +18,7 @@ const Numpad: React.FC<NumpadProps> = ({editTag, goBack}) => {
   const dispatch = useNumpadDispatch();
 
   React.useEffect(() => {
-    // if navigating from and edit tag, we update the input and
+    // if navigating from and edit tag, we update the input text
     if (editTag?._id) {
       dispatch({
         type: ActionTypes.INSERT_NUMBER,
@@ -39,6 +39,7 @@ const Numpad: React.FC<NumpadProps> = ({editTag, goBack}) => {
                 borderColor: Colors.primary,
                 backgroundColor: Colors.lighter,
                 fontSize: 24,
+                color: Colors.black,
                 paddingHorizontal: 12,
                 borderRadius: 4,
               }}

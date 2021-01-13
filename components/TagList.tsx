@@ -5,9 +5,11 @@ import {
   View,
   Animated,
   RefreshControl,
+  Platform,
+  StyleSheet,
 } from 'react-native';
 import {useTagListState} from './TagListContext';
-import {ButtonTag, CircleSvg, HEADER_HEIGHT, Colors} from './Theme';
+import {CircleSvg, HEADER_HEIGHT, Colors} from './Theme';
 import {CustomMasker} from '../utils/CustomMasker';
 import {useGlobalState, Status} from './GlobalContext';
 
@@ -18,29 +20,32 @@ type ViewCurrencyProps = {
 const formatter = new CustomMasker();
 
 const ViewCurrency: React.FC<ViewCurrencyProps> = ({currency}) => (
-  <Animated.View
-    style={{
-      flexDirection: 'row',
-      alignItems: 'center',
-      flex: 1,
-    }}>
-    <View style={{width: 20}} />
-    <View style={{flex: 1}}>
-      <Text
-        style={{
-          fontVariant: ['tabular-nums'],
-          fontSize: 20,
-        }}>
-        {currency}
-      </Text>
+  <View style={currencySyles.container}>
+    <View style={currencySyles.separator} />
+    <View style={currencySyles.currencyContainer}>
+      <Text style={currencySyles.currency}>{currency}</Text>
     </View>
-    <View style={{width: 40}} />
-  </Animated.View>
+    <View style={currencySyles.separator} />
+    <View style={currencySyles.separator} />
+  </View>
 );
+const currencySyles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  separator: {width: 20},
+  currencyContainer: {flex: 1},
+  currency: {
+    fontVariant: ['tabular-nums'],
+    fontSize: 20,
+  },
+});
 
 interface TagListItemProps {
   tag: Tag;
-  isFocus?: boolean;
+  backgroundColor?: string;
   remove: () => void;
   edit: () => void;
 }
@@ -48,11 +53,11 @@ const TagListItem: React.FC<TagListItemProps> = ({
   tag,
   remove,
   edit,
-  isFocus,
+  backgroundColor,
 }) => {
   // Start the opacity at 0
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
-
+  // const currency = React.useMemo(() => formatter.mask(tag.title), [tag.title]);
   /**
    * Helper function for animating the item
    * @param appear - whether the animation should cause the item to appear or disappear
@@ -88,30 +93,39 @@ const TagListItem: React.FC<TagListItemProps> = ({
 
   return (
     <Animated.View
-      style={{
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingVertical: 12,
-        paddingHorizontal: 24,
-        backgroundColor: isFocus ? Colors.lightest : Colors.white,
-        opacity: fadeAnim,
-      }}>
-      <View style={[{alignItems: 'center', justifyContent: 'center'}]}>
+      style={[
+        itemSyles.container,
+        {
+          backgroundColor: backgroundColor,
+          opacity: fadeAnim,
+        },
+      ]}>
+      <View style={itemSyles.circleContainer}>
         <CircleSvg color={tag.color} />
       </View>
-      <ViewCurrency currency={formatter.mask(tag.title)} />
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-        }}>
-        <ButtonTag onPress={() => edit()}>Edit</ButtonTag>
-        <View style={{width: 6}} />
-        <ButtonTag onPress={() => _delete()}>Delete</ButtonTag>
+      <ViewCurrency currency={tag.title} />
+      <View style={itemSyles.buttonsContainer}>
+        <Text onPress={() => edit()}>Edit</Text>
+        <View style={itemSyles.separator} />
+        <Text onPress={() => _delete()}>Delete</Text>
       </View>
     </Animated.View>
   );
 };
+const itemSyles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+  },
+  circleContainer: {alignItems: 'center', justifyContent: 'center'},
+  separator: {width: 6},
+  buttonsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+});
 
 const EmptyList: React.FC<{state: Status}> = ({state}) => {
   const _message = () => {
@@ -148,38 +162,47 @@ const TagsList: React.FC<TagsListProps> = ({
 }) => {
   const tags = useTagListState();
   const global = useGlobalState();
-  const _renderTag: ListRenderItem<Tag> = ({item: tag, index}) => (
-    <TagListItem
-      tag={tag}
-      isFocus={tag._id === global.lastReplacedId}
-      remove={() => onDelete(tag, index)}
-      edit={() => onEdit(tag)}
-    />
-  );
-
+  const _renderTag: ListRenderItem<Tag> = ({item: tag, index}) => {
+    const backgroundColor =
+      tag._id === global.lastReplacedId ? Colors.lightest : Colors.white;
+    return (
+      <TagListItem
+        tag={tag}
+        backgroundColor={backgroundColor}
+        remove={() => onDelete(tag, index)}
+        edit={() => onEdit(tag)}
+      />
+    );
+  };
   return (
     <Animated.FlatList
       data={tags}
+      contentContainerStyle={{
+        paddingTop: Platform.select({android: HEADER_HEIGHT, ios: 0}),
+      }}
       showsVerticalScrollIndicator={false}
       contentInset={{
         top: HEADER_HEIGHT,
       }}
       contentOffset={{
         x: 0,
-        y: -HEADER_HEIGHT,
+        y: Platform.select({android: 0, ios: -HEADER_HEIGHT}) ?? 0,
       }}
       onScroll={Animated.event([{nativeEvent: {contentOffset: {y: offset}}}], {
         useNativeDriver: true,
       })}
+      automaticallyAdjustContentInsets={false}
       refreshControl={
         <RefreshControl
           refreshing={global.refreshing}
           onRefresh={() => onRefresh()}
+          progressViewOffset={HEADER_HEIGHT}
         />
       }
       ListEmptyComponent={<EmptyList state={global.status} />}
       renderItem={_renderTag}
       keyExtractor={(tag) => tag._id}
+      extraData={global.lastReplacedId}
     />
   );
 };

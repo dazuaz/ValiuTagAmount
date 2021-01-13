@@ -47,19 +47,19 @@ export const Colors = {
 
 export const ButtonTag: React.FC<PressableProps> = ({children, ...rest}) => {
   return (
-    <Pressable
-      {...rest}
-      style={{
-        backgroundColor: '#f4f4f4',
-        paddingVertical: 3,
-        paddingHorizontal: 6,
-        borderRadius: 4,
-      }}>
+    <Pressable {...rest} style={buttonTagStyles.container}>
       <Text>{children}</Text>
     </Pressable>
   );
 };
-
+const buttonTagStyles = StyleSheet.create({
+  container: {
+    backgroundColor: '#f4f4f4',
+    paddingVertical: 3,
+    paddingHorizontal: 6,
+    borderRadius: 4,
+  },
+});
 const styleJoiner = (...arg: any) => StyleSheet.flatten(arg);
 
 export const ButtonPrimary: React.FC<PressableProps> = ({

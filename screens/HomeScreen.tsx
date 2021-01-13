@@ -153,7 +153,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     paddingHorizontal: CONTENT_PADDING,
   },
-
   headerTitle: {
     fontSize: 24,
     fontWeight: '600',

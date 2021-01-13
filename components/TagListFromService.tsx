@@ -27,9 +27,9 @@ export const TagListFromService: React.FC<TagListFromServiceProps> = ({
     handleInitialLoad();
   }, [handleInitialLoad]);
 
-  const handleRemoveTag = async (tag: Tag, index: number) => {
+  const handleRemoveTag = async (tag: Tag) => {
     try {
-      await removeTag(tag, index, tagsDispatch, globalDispatch);
+      await removeTag(tag, tagsDispatch, globalDispatch);
     } catch (error) {}
   };
 
@@ -48,7 +48,7 @@ export const TagListFromService: React.FC<TagListFromServiceProps> = ({
       offset={offset}
       onRefresh={() => handleRefresh()}
       onEdit={onEdit}
-      onDelete={(tag: Tag, index: number) => handleRemoveTag(tag, index)}
+      onDelete={(tag: Tag) => handleRemoveTag(tag)}
     />
   );
 };

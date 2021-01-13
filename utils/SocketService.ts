@@ -14,10 +14,8 @@ export class SocketService {
   private socket: SocketIOClient.Socket = {} as SocketIOClient.Socket;
 
   public init(): SocketService {
-    // console.log('initiating socket service');
-
+    console.info('initiating socket service');
     this.socket = io('ws://localhost:3000');
-    // const disconnect$ = Observable.fromEvent(this.socket, 'disconnect').first();
     return this;
   }
 

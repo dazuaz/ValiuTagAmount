@@ -8,7 +8,8 @@ import {
   Dispatch as TagsDispatch,
 } from './TagListContext';
 import randomColor from 'randomcolor';
-const API_BASE_URL = 'http://localhost:3000/api/tags';
+
+const API_BASE_URL = 'http://10.0.2.2:3000/api/tags';
 
 type ValiuResponse<T> = {
   data: T;
@@ -23,6 +24,7 @@ export const getAllTags = async (
   try {
     globalDispatch({type: GlobalTypes.UPDATE_STATUS, payload: Status.Loading});
     const response = await fetch(API_BASE_URL);
+
     const body: ValiuResponse<Tag[]> = await response.json();
     if (body.status === '200') {
       tagsDispatch({type: TagsTypes.RESET_TAGS, payload: body.data});
@@ -36,17 +38,15 @@ export const getAllTags = async (
 };
 export const removeTag = async (
   tag: Tag,
-  index: number,
   tagsDispatch: TagsDispatch,
   globalDispatch: GlobalsDispatch,
 ) => {
   try {
-    tagsDispatch({type: TagsTypes.REMOVE_TAG, payload: index}); //remove on client
-    const response = await fetch(API_BASE_URL);
+    const response = await fetch(API_BASE_URL + '/' + tag._id, {
+      method: 'delete',
+    });
     const body: ValiuResponse<Tag> = await response.json(); //remove on server
     if (body.status !== '200') {
-      // Restore TAG if server update failed
-      tagsDispatch({type: TagsTypes.RESTORE_TAG, payload: {tag, index}});
       globalDispatch({type: GlobalTypes.UPDATE_STATUS, payload: Status.Error});
     }
   } catch (error) {
