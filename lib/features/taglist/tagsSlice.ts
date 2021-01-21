@@ -76,9 +76,11 @@ export const tagsSlice = createSlice({
 
 export const {addTag, updateTag, removeTag} = tagsSlice.actions;
 
-export const {selectAll: selectTags} = tagsAdapter.getSelectors<RootState>(
-  (state) => state.tags,
-);
+export const {
+  selectAll: selectTags,
+  selectTotal: selectTagsTotal,
+  selectById: selectTagById,
+} = tagsAdapter.getSelectors<RootState>((state) => state.tags);
 
 export const selectStatus = (state: TagsState) => state.tags.status;
 export const selectLastReplacedId = (state: TagsState) =>
