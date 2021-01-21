@@ -6,7 +6,7 @@ import {
   Dimensions,
   LayoutRectangle,
 } from 'react-native';
-import {TagListFromService} from '../components/TagListFromService';
+import {TagListFromService} from '../features/taglist/TagListFromService';
 import {StackNavigationProp} from '@react-navigation/stack';
 
 import {
@@ -26,7 +26,7 @@ const windowWidth = Dimensions.get('window').width;
 
 const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
   // the offset Animated.Value is passed down to the TagsList FlatList onScroll event
-  const offset = React.useRef(new Animated.Value(0)).current;
+  const offset = React.useRef(new Animated.Value(0.01)).current;
 
   // It would be simpler to modify the height of the container but it is not supported by useNativeDrive *
   // Translating looks good on iOS simulator, but since we are translating outside of the safeview,
@@ -49,13 +49,17 @@ const HomeScreen: React.FC<HomeScreenProps> = ({navigation}) => {
       transform: [{translateY: containerOffset}],
     },
   ];
-
+  const animatedLogo = [
+    {
+      opacity: fadeLogo,
+    },
+  ];
   return (
     <View style={styles.homeScreen}>
       <View style={styles.headerContainer}>
         <Animated.View style={animatedHeader}>
           <AnimatedHeaderText offset={offset} />
-          <Animated.View style={{opacity: fadeLogo}}>
+          <Animated.View style={animatedLogo}>
             <ValiuLogo height={40} />
           </Animated.View>
         </Animated.View>

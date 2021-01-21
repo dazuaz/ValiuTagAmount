@@ -5,7 +5,9 @@ import Logo from '../assets/logo_valiu.svg';
 import ArrowLeftSvg from '../assets/arrow_left.svg';
 import BackspaceSvg from '../assets/backspace.svg';
 
-// Valiu logo aspec ratio: width="106"/height="40"
+export const HEADER_HEIGHT = 100;
+export const CONTENT_PADDING = 24;
+
 export const ValiuLogo: React.FC<SvgProps> = (props) => (
   <Logo
     height={props.width ? +props.width * (40 / 106) : undefined}
@@ -32,8 +34,7 @@ export const CircleSvg: React.FC<SvgProps> = ({color}) => (
     <Circle cx="50" cy="50" r="45" fill={color} />
   </Svg>
 );
-export const HEADER_HEIGHT = 100;
-export const CONTENT_PADDING = 24;
+
 export const Colors = {
   primary: '#4953CF',
   secondary: '#22354C',
@@ -54,7 +55,7 @@ export const ButtonTag: React.FC<PressableProps> = ({children, ...rest}) => {
 };
 const buttonTagStyles = StyleSheet.create({
   container: {
-    backgroundColor: '#f4f4f4',
+    backgroundColor: Colors.light,
     paddingVertical: 3,
     paddingHorizontal: 6,
     borderRadius: 4,

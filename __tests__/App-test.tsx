@@ -4,7 +4,7 @@
 
 import 'react-native';
 import * as React from 'react';
-import App from '../App';
+import App from '../lib/App';
 import {render, waitFor} from '@testing-library/react-native';
 // Note: test renderer must be required after react-native.
 // Silence the warning https://github.com/facebook/react-native/issues/11094#issuecomment-263240420

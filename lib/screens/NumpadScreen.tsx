@@ -3,8 +3,8 @@ import {RouteProp} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {View, Text, Pressable} from 'react-native';
 
-import {NumpadProvider} from '../components/NumpadContext';
-import Numpad from '../components/Numpad';
+// import {NumpadProvider} from '../features/numpad/NumpadContext';
+import Numpad from '../features/numpad/Numpad';
 import {Colors, ArrowLeft} from '../components/Theme';
 
 type NumpadScreenNavigationProp = StackNavigationProp<
@@ -44,12 +44,7 @@ const NumpadScreen: React.FC<NumpadScreenProps> = ({navigation, route}) => {
           </Text>
         </View>
       </View>
-      <NumpadProvider>
-        <Numpad
-          goBack={() => navigation.goBack()}
-          editTag={route.params?.tag}
-        />
-      </NumpadProvider>
+      <Numpad goBack={() => navigation.goBack()} editTag={route.params?.tag} />
     </View>
   );
 };

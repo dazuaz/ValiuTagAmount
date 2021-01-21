@@ -8,10 +8,21 @@ import {
   Platform,
   StyleSheet,
 } from 'react-native';
-import {useTagListState} from './TagListContext';
-import {CircleSvg, HEADER_HEIGHT, Colors} from './Theme';
-import {CustomMasker} from '../utils/CustomMasker';
-import {useGlobalState, Status} from './GlobalContext';
+// import {useTagListState} from './TagListContext';
+import {useSelector} from 'react-redux';
+import {
+  selectTags,
+  selectStatus,
+  selectLastReplacedId,
+  Status,
+} from './tagsSlice';
+import {
+  CircleSvg,
+  HEADER_HEIGHT,
+  Colors,
+  ButtonTag,
+} from '../../components/Theme';
+import {CustomMasker} from '../../utils/CustomMasker';
 
 type ViewCurrencyProps = {
   currency: string;
@@ -23,7 +34,7 @@ const ViewCurrency: React.FC<ViewCurrencyProps> = ({currency}) => (
   <View style={currencySyles.container}>
     <View style={currencySyles.separator} />
     <View style={currencySyles.currencyContainer}>
-      <Text style={currencySyles.currency}>{currency}</Text>
+      <Text style={currencySyles.currency}>{formatter.mask(currency)}</Text>
     </View>
     <View style={currencySyles.separator} />
     <View style={currencySyles.separator} />
@@ -88,26 +99,25 @@ const TagListItem: React.FC<TagListItemProps> = ({
   // 1) Animate the item disappearing. On completion:
   // 2) Call the parent to let it know to remove the item from the list
   const _delete = () => {
-    _animateItem(false, 200, () => remove());
+    _animateItem(false, 100, () => remove());
   };
-
+  const animatedTag = [
+    itemSyles.container,
+    {
+      backgroundColor: backgroundColor,
+      opacity: fadeAnim,
+    },
+  ];
   return (
-    <Animated.View
-      style={[
-        itemSyles.container,
-        {
-          backgroundColor: backgroundColor,
-          opacity: fadeAnim,
-        },
-      ]}>
+    <Animated.View style={animatedTag}>
       <View style={itemSyles.circleContainer}>
         <CircleSvg color={tag.color} />
       </View>
       <ViewCurrency currency={tag.title} />
       <View style={itemSyles.buttonsContainer}>
-        <Text onPress={() => edit()}>Edit</Text>
+        <ButtonTag onPress={() => edit()}>Edit</ButtonTag>
         <View style={itemSyles.separator} />
-        <Text onPress={() => _delete()}>Delete</Text>
+        <ButtonTag onPress={() => _delete()}>Delete</ButtonTag>
       </View>
     </Animated.View>
   );
@@ -135,7 +145,7 @@ const EmptyList: React.FC<{state: Status}> = ({state}) => {
       case Status.Loaded:
         return 'No tags found.';
       case Status.Loading:
-        return 'Loading...';
+        return '';
       case Status.Idle:
         return 'Valiu rocks!';
       default:
@@ -160,11 +170,13 @@ const TagsList: React.FC<TagsListProps> = ({
   onEdit,
   offset,
 }) => {
-  const tags = useTagListState();
-  const global = useGlobalState();
+  const tags = useSelector(selectTags);
+  const status = useSelector(selectStatus);
+  const lastReplacedId = useSelector(selectLastReplacedId);
+  // const status = Status.Idle;
   const _renderTag: ListRenderItem<Tag> = ({item: tag, index}) => {
     const backgroundColor =
-      tag._id === global.lastReplacedId ? Colors.lightest : Colors.white;
+      tag._id === lastReplacedId ? Colors.lightest : Colors.white;
     return (
       <TagListItem
         tag={tag}
@@ -194,15 +206,15 @@ const TagsList: React.FC<TagsListProps> = ({
       automaticallyAdjustContentInsets={false}
       refreshControl={
         <RefreshControl
-          refreshing={global.refreshing}
+          refreshing={status === Status.Loading}
           onRefresh={() => onRefresh()}
           progressViewOffset={HEADER_HEIGHT}
         />
       }
-      ListEmptyComponent={<EmptyList state={global.status} />}
+      ListEmptyComponent={<EmptyList state={status} />}
       renderItem={_renderTag}
       keyExtractor={(tag) => tag._id}
-      extraData={global.lastReplacedId}
+      extraData={lastReplacedId}
     />
   );
 };

@@ -1,25 +1,23 @@
 import * as React from 'react';
 import {Dimensions, Pressable, Text, View, PressableProps} from 'react-native';
-import {ActionTypes, useNumpadDispatch} from './NumpadContext';
-import {Backspace, Colors} from './Theme';
+// import {ActionTypes, useNumpadDispatch} from './NumpadContext';
+import {Backspace, Colors} from '../../components/Theme';
+import {insertDigit, insertComma, deleteChar} from './numpadSlice';
+import {useDispatch} from 'react-redux';
 
 interface PadProps extends PressableProps {
-  number?: number;
-  type?: ActionTypes;
+  action: {
+    payload: any;
+    type: string;
+  };
 }
 
-const Pad: React.FC<PadProps> = ({
-  number,
-  type = ActionTypes.INSERT_NUMBER,
-  children,
-  ...rest
-}) => {
-  const dispatch = useNumpadDispatch();
-
+const Pad: React.FC<PadProps> = ({action, children, ...rest}) => {
+  const dispatch = useDispatch();
   return (
     <Col>
       <Pressable
-        onPress={() => dispatch({type: type, payload: number})}
+        onPress={() => dispatch(action)}
         style={{
           flex: 1,
           alignItems: 'center',
@@ -67,11 +65,11 @@ const NumpadDigits: React.FC = () => {
         <NumberPad number={9} />
       </Row>
       <Row>
-        <Pad type={ActionTypes.INSERT_COMMA}>
+        <Pad action={insertComma()}>
           <Text>,</Text>
         </Pad>
         <NumberPad number={0} />
-        <Pad type={ActionTypes.DELETE}>
+        <Pad action={deleteChar()}>
           {({pressed}) => (
             <Backspace
               width={20}
@@ -85,7 +83,7 @@ const NumpadDigits: React.FC = () => {
 };
 
 const NumberPad: React.FC<{number: number}> = ({number}) => (
-  <Pad number={number}>
+  <Pad action={insertDigit(number)}>
     {({pressed}) => (
       <View
         style={{

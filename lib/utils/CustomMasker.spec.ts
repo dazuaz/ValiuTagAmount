@@ -1,4 +1,4 @@
-import {CustomMasker} from '../utils/CustomMasker';
+import {CustomMasker} from './CustomMasker';
 const masker = new CustomMasker();
 
 it('unmask correct number 1.234 => 1234', () => {

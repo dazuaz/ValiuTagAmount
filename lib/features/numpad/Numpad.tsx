@@ -3,10 +3,11 @@ import {View} from 'react-native';
 import NumpadInput from './NumpadInput';
 import NumpadButton from './NumpadButton';
 import NumpadDigits from './NumpadDigits';
-import {Colors} from './Theme';
-import {ActionTypes, useNumpadDispatch} from './NumpadContext';
+import {Colors} from '../../components/Theme';
 
-import {CustomMasker} from '../utils/CustomMasker';
+import {CustomMasker} from '../../utils/CustomMasker';
+import {useDispatch} from 'react-redux';
+import {replaceNumpad} from './numpadSlice';
 
 type NumpadProps = {
   editTag?: Tag;
@@ -15,15 +16,12 @@ type NumpadProps = {
 const masker = new CustomMasker();
 
 const Numpad: React.FC<NumpadProps> = ({editTag, goBack}) => {
-  const dispatch = useNumpadDispatch();
+  const dispatch = useDispatch();
 
   React.useEffect(() => {
     // if navigating from and edit tag, we update the input text
     if (editTag?._id) {
-      dispatch({
-        type: ActionTypes.INSERT_NUMBER,
-        payload: masker.mask(editTag.title),
-      });
+      dispatch(replaceNumpad(masker.mask(editTag.title)));
     }
   }, [editTag, dispatch]);
 

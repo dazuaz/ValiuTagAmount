@@ -11,51 +11,45 @@
  */
 
 import * as React from 'react';
-import {SafeAreaView, StatusBar} from 'react-native';
+import {SafeAreaView, StatusBar, StyleSheet} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import HomeScreen from './screens/HomeScreen';
 import NumpadScreen from './screens/NumpadScreen';
-import {
-  ActionTypes,
-  TagListProvider,
-  useTagListDispatch,
-} from './components/TagListContext';
 import {SocketService} from './utils/SocketService';
-import {
-  GlobalProvider,
-  useGlobalDispatch,
-  ActionTypes as GlobalTypes,
-} from './components/GlobalContext';
+
+import {Provider, useDispatch} from 'react-redux';
+import store from './store';
+import {addTag, updateTag, removeTag} from './features/taglist/tagsSlice';
 const Stack = createStackNavigator<RootStackParamList>();
 
 const App: React.FC = () => (
-  <NavigationContainer>
-    <StatusBar barStyle="dark-content" />
-    <GlobalProvider>
-      <TagListProvider>
-        <SocketSubscribe />
-      </TagListProvider>
-    </GlobalProvider>
-  </NavigationContainer>
+  <Provider store={store}>
+    <NavigationContainer>
+      <StatusBar />
+      <SocketSubscribe />
+    </NavigationContainer>
+  </Provider>
 );
 
 const SocketSubscribe: React.FC = () => {
-  const dispatch = useTagListDispatch();
-  const gloablDispatch = useGlobalDispatch();
+  const dispatch = useDispatch();
   const service = React.useMemo(() => new SocketService(), []);
   React.useEffect(() => {
     service.init();
     const onAddSub = service.onAddTag().subscribe((t: Tag) => {
-      dispatch({type: ActionTypes.ADD_TAG_SAFE, payload: t});
-      gloablDispatch({type: GlobalTypes.SET_REPlACED, payload: t._id});
+      dispatch(addTag(t));
     });
     const onModSub = service.onModifyTag().subscribe((t: Tag) => {
-      dispatch({type: ActionTypes.MODIFY_TAG, payload: t});
-      gloablDispatch({type: GlobalTypes.SET_REPlACED, payload: t._id});
+      dispatch(
+        updateTag({
+          id: t._id,
+          changes: {title: t.title, updated_at: t.updated_at},
+        }),
+      );
     });
     const onRemSub = service.onRemoveTag().subscribe((id: string) => {
-      dispatch({type: ActionTypes.REMOVE_TAG_BY_ID, payload: id});
+      dispatch(removeTag(id));
     });
     return () => {
       onAddSub.unsubscribe();
@@ -63,10 +57,10 @@ const SocketSubscribe: React.FC = () => {
       onRemSub.unsubscribe();
       service.disconnect();
     };
-  }, [service, dispatch, gloablDispatch]);
+  }, [service, dispatch]);
 
   return (
-    <SafeAreaView style={{flex: 1}}>
+    <SafeAreaView style={styles.container}>
       <Stack.Navigator screenOptions={{headerShown: false}}>
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Numpad" component={NumpadScreen} />
@@ -74,5 +68,9 @@ const SocketSubscribe: React.FC = () => {
     </SafeAreaView>
   );
 };
-
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
 export default App;

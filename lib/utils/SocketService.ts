@@ -3,8 +3,7 @@ import {fromEvent, Observable} from 'rxjs';
 /**
  * SocketService
  *
- * Creates an Observable for each WebSocket event available on the server,
- * then we can then subscribe to changes and attach a react hook to it
+ * Creates an Observable for each WebSocket event available on the server.
  *
  * credits: https://github.com/rossbulat/ts-live-chat-demo/tree/master/client
  *
@@ -15,7 +14,7 @@ export class SocketService {
 
   public init(): SocketService {
     console.info('initiating socket service');
-    this.socket = io('ws://localhost:3000');
+    this.socket = io('ws://10.0.2.2:3000');
     return this;
   }
 

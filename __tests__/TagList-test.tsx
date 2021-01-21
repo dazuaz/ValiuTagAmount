@@ -4,10 +4,10 @@
 
 import 'react-native';
 import * as React from 'react';
-import TagList from '../components/TagList';
+import TagList from '../lib/features/taglist/TagList';
 import {Animated} from 'react-native';
-import {TagListProvider} from '../components/TagListContext';
-import {GlobalProvider} from '../components/GlobalContext';
+import {TagListProvider} from '../lib/components/TagListContext';
+import {GlobalProvider} from '../lib/components/GlobalContext';
 
 // Note: test renderer must be required after react-native.
 import {render, waitFor} from '@testing-library/react-native';
