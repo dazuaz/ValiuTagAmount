@@ -4,7 +4,7 @@ import {CustomMasker} from '../../utils/CustomMasker';
 import {ButtonPrimary} from '../../components/Theme';
 import {useSelector, useDispatch} from 'react-redux';
 import {selectNumpad} from './numpadSlice';
-import {handleAddTag} from '../taglist/tagsSlice';
+import {handleAddTag, handleEditTag} from '../taglist/tagsSlice';
 
 const masker = new CustomMasker();
 
@@ -23,11 +23,11 @@ const NumpadButton: React.FC<NumpadButtonProps> = ({editTag, goBack}) => {
 
     if (editTag && isEdit) {
       // Its edit action
-      // dispatch(handleModifyTag({tag: editTag, title: tagTitle}));
+      dispatch(handleEditTag({tag: editTag, title: tagTitle}));
     } else {
       if (tagTitle) {
         // Its add action
-        dispatch(handleAddTag(tagTitle));
+        dispatch(handleAddTag({title: tagTitle}));
       }
     }
     goBack();

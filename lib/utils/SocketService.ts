@@ -22,11 +22,11 @@ export class SocketService {
   public onAddTag(): Observable<Tag> {
     return fromEvent(this.socket, 'ADD_TAG');
   }
-  // link addTag event to rxjs data source
+  // link onModifyTag event to rxjs data source
   public onModifyTag(): Observable<Tag> {
     return fromEvent(this.socket, 'MODIFY_TAG');
   }
-  // link addTag event to rxjs data source
+  // link onRemoveTag event to rxjs data source
   public onRemoveTag(): Observable<string> {
     return fromEvent(this.socket, 'REMOVE_TAG');
   }

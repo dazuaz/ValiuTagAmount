@@ -1,5 +1,6 @@
 import {createSlice} from '@reduxjs/toolkit';
 import {CustomMasker} from '../../utils/CustomMasker';
+
 const masker = new CustomMasker();
 
 export const numpadSlice = createSlice({

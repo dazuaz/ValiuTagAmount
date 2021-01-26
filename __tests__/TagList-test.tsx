@@ -6,23 +6,20 @@ import 'react-native';
 import * as React from 'react';
 import TagList from '../lib/features/taglist/TagList';
 import {Animated} from 'react-native';
-import {TagListProvider} from '../lib/components/TagListContext';
-import {GlobalProvider} from '../lib/components/GlobalContext';
 
 // Note: test renderer must be required after react-native.
 import {render, waitFor} from '@testing-library/react-native';
-
+import {Provider} from 'react-redux';
+import store from '../lib/store';
 const EmptyTagList = () => (
-  <GlobalProvider>
-    <TagListProvider>
-      <TagList
-        offset={new Animated.Value(0)}
-        onEdit={() => {}}
-        onDelete={() => {}}
-        onRefresh={() => {}}
-      />
-    </TagListProvider>
-  </GlobalProvider>
+  <Provider store={store}>
+    <TagList
+      offset={new Animated.Value(0)}
+      onEdit={() => {}}
+      onDelete={() => {}}
+      onRefresh={() => {}}
+    />
+  </Provider>
 );
 
 it('renders idle empty message', async () => {

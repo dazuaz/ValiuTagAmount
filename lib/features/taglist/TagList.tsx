@@ -7,6 +7,8 @@ import {
   RefreshControl,
   Platform,
   StyleSheet,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 // import {useTagListState} from './TagListContext';
 import {useSelector} from 'react-redux';
@@ -24,39 +26,10 @@ import {
 } from '../../components/Theme';
 import {CustomMasker} from '../../utils/CustomMasker';
 
-type ViewCurrencyProps = {
-  currency: string;
-};
-
 const formatter = new CustomMasker();
-
-const ViewCurrency: React.FC<ViewCurrencyProps> = ({currency}) => (
-  <View style={currencySyles.container}>
-    <View style={currencySyles.separator} />
-    <View style={currencySyles.currencyContainer}>
-      <Text style={currencySyles.currency}>{formatter.mask(currency)}</Text>
-    </View>
-    <View style={currencySyles.separator} />
-    <View style={currencySyles.separator} />
-  </View>
-);
-const currencySyles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  separator: {width: 20},
-  currencyContainer: {flex: 1},
-  currency: {
-    fontVariant: ['tabular-nums'],
-    fontSize: 20,
-  },
-});
-
 interface TagListItemProps {
   tag: Tag;
-  backgroundColor?: string;
+  style: StyleProp<ViewStyle>;
   remove: () => void;
   edit: () => void;
 }
@@ -64,62 +37,29 @@ const TagListItem: React.FC<TagListItemProps> = ({
   tag,
   remove,
   edit,
-  backgroundColor,
+  style,
 }) => {
-  // Start the opacity at 0
-  const fadeAnim = React.useRef(new Animated.Value(0)).current;
-  // const currency = React.useMemo(() => formatter.mask(tag.title), [tag.title]);
-  /**
-   * Helper function for animating the item
-   * @param appear - whether the animation should cause the item to appear or disappear
-   * @param delay - how long the animation should last (ms)
-   * @param callback - callback to be called when the animation finishes
-   */
-  const _animateItem = React.useCallback(
-    (
-      appear: boolean = true,
-      duration: number = 400,
-      callback: () => void = () => null,
-    ) => {
-      Animated.timing(fadeAnim, {
-        toValue: appear ? 1 : 0,
-        duration: duration,
-        useNativeDriver: true,
-      }).start(callback);
-    },
-    [fadeAnim],
-  );
-  // Animate the appearance of the item appearing the first time it loads
-  // Empty array in useEffect results in this only occuring on the first render
-  React.useEffect(() => {
-    _animateItem();
-  }, [_animateItem]);
-
-  // Deletes an item from the list. Follows the following order:
-  // 1) Animate the item disappearing. On completion:
-  // 2) Call the parent to let it know to remove the item from the list
-  const _delete = () => {
-    _animateItem(false, 100, () => remove());
-  };
-  const animatedTag = [
-    itemSyles.container,
-    {
-      backgroundColor: backgroundColor,
-      opacity: fadeAnim,
-    },
-  ];
   return (
-    <Animated.View style={animatedTag}>
+    <View style={[itemSyles.container, style]}>
       <View style={itemSyles.circleContainer}>
         <CircleSvg color={tag.color} />
       </View>
-      <ViewCurrency currency={tag.title} />
+      <View style={currencySyles.container}>
+        <View style={currencySyles.separator} />
+        <View style={currencySyles.currencyContainer}>
+          <Text style={currencySyles.currency}>
+            {formatter.mask(tag.title)}
+          </Text>
+        </View>
+        <View style={currencySyles.separator} />
+        <View style={currencySyles.separator} />
+      </View>
       <View style={itemSyles.buttonsContainer}>
         <ButtonTag onPress={() => edit()}>Edit</ButtonTag>
         <View style={itemSyles.separator} />
-        <ButtonTag onPress={() => _delete()}>Delete</ButtonTag>
+        <ButtonTag onPress={() => remove()}>Delete</ButtonTag>
       </View>
-    </Animated.View>
+    </View>
   );
 };
 const itemSyles = StyleSheet.create({
@@ -134,6 +74,20 @@ const itemSyles = StyleSheet.create({
   buttonsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+});
+
+const currencySyles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  separator: {width: 20},
+  currencyContainer: {flex: 1},
+  currency: {
+    fontVariant: ['tabular-nums'],
+    fontSize: 20,
   },
 });
 
@@ -160,7 +114,7 @@ const EmptyList: React.FC<{state: Status}> = ({state}) => {
 };
 type TagsListProps = {
   onEdit: (tag: Tag) => void;
-  onDelete: (tag: Tag, index: number) => void;
+  onDelete: (tagId: string) => void;
   onRefresh: () => void;
   offset: Animated.Value;
 };
@@ -173,19 +127,19 @@ const TagsList: React.FC<TagsListProps> = ({
   const tags = useSelector(selectTags);
   const status = useSelector(selectStatus);
   const lastReplacedId = useSelector(selectLastReplacedId);
-  // const status = Status.Idle;
-  const _renderTag: ListRenderItem<Tag> = ({item: tag, index}) => {
+  const _renderTag: ListRenderItem<Tag> = ({item: tag}) => {
     const backgroundColor =
       tag._id === lastReplacedId ? Colors.lightest : Colors.white;
     return (
       <TagListItem
         tag={tag}
-        backgroundColor={backgroundColor}
-        remove={() => onDelete(tag, index)}
+        style={{backgroundColor}}
+        remove={() => onDelete(tag._id)}
         edit={() => onEdit(tag)}
       />
     );
   };
+
   return (
     <Animated.FlatList
       data={tags}

@@ -6,7 +6,7 @@ import {
   AnyAction,
   EntityState,
 } from '@reduxjs/toolkit';
-import {getAllTags, addTag as addTagApi} from '../../api/tagListApi';
+import {getAllTags, addTag as addTagApi, modifyTag} from '../../api/tagListApi';
 import {RootState} from '../../store';
 
 export const tagsAdapter = createEntityAdapter<Tag>({
@@ -45,12 +45,20 @@ export const fetchTags = createAsyncThunk('tags/fetchTags', async () => {
   return response.data;
 });
 
-// export const handleModifyTag = createAsyncThunk(
-//   'tags/handleModifyTag',
-//   async (data: {tag: Tag; title: string}) => {
-//     return modifyTag(data.tag, data.title);
-//   },
-// );
+export const handleAddTag = createAsyncThunk(
+  'tags/handleAddTag',
+  async (data: {title: string}) => {
+    const response = await addTagApi(data.title);
+    return response.data;
+  },
+);
+export const handleEditTag = createAsyncThunk(
+  'tags/handleEditTag',
+  async (data: {tag: Tag; title: string}) => {
+    const response = await modifyTag(data.tag, data.title);
+    return response.data;
+  },
+);
 
 export const tagsSlice = createSlice({
   name: 'tags',
@@ -61,13 +69,20 @@ export const tagsSlice = createSlice({
     removeTag: tagsAdapter.removeOne,
   },
   extraReducers: (builder) => {
-    builder.addCase(fetchTags.pending, (state) => {
-      state.status = Status.Loading;
-    });
-    builder.addCase(fetchTags.fulfilled, (state, action) => {
-      state.status = Status.Loaded;
-      tagsAdapter.upsertMany(state, action);
-    });
+    builder
+      .addCase(fetchTags.pending, (state) => {
+        state.status = Status.Loading;
+      })
+      .addCase(fetchTags.fulfilled, (state, action) => {
+        state.status = Status.Loaded;
+        tagsAdapter.upsertMany(state, action);
+      })
+      .addCase(handleAddTag.fulfilled, (state, action) => {
+        state.lastReplacedId = action.payload._id;
+      })
+      .addCase(handleEditTag.fulfilled, (state, action) => {
+        state.lastReplacedId = action.payload._id;
+      });
     builder.addMatcher(isRejectedAction, (state) => {
       state.status = Status.Error;
     });
