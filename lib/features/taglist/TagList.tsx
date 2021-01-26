@@ -10,7 +10,7 @@ import {
   StyleProp,
   ViewStyle,
 } from 'react-native';
-// import {useTagListState} from './TagListContext';
+
 import {useSelector} from 'react-redux';
 import {
   selectTags,
