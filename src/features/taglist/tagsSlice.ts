@@ -6,7 +6,12 @@ import {
   AnyAction,
   EntityState,
 } from '@reduxjs/toolkit';
-import {getAllTags, addTag as addTagApi, modifyTag} from '../../api/tagListApi';
+import {
+  getAllTags,
+  addTag as addTagApi,
+  modifyTag,
+  removeTag as removeTagApi,
+} from '../../api/tagListApi';
 import {RootState} from '../../store';
 
 export const tagsAdapter = createEntityAdapter<Tag>({
@@ -56,6 +61,13 @@ export const handleEditTag = createAsyncThunk(
   'tags/handleEditTag',
   async (data: {tag: Tag; title: string}) => {
     const response = await modifyTag(data.tag, data.title);
+    return response.data;
+  },
+);
+export const handleRemoveTag = createAsyncThunk(
+  'tags/handleRemoveTag',
+  async (data: {tagId: string}) => {
+    const response = await removeTagApi(data.tagId);
     return response.data;
   },
 );

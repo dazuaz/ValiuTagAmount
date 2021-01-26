@@ -107,11 +107,14 @@ const EmptyList: React.FC<{state: Status}> = ({state}) => {
     }
   };
   return (
-    <Text testID="empty-list" style={{marginTop: 12, textAlign: 'center'}}>
+    <Text testID="empty-list" style={emptyListSyles.emptyList}>
       {_message()}
     </Text>
   );
 };
+const emptyListSyles = StyleSheet.create({
+  emptyList: {marginTop: 12, textAlign: 'center'},
+});
 type TagsListProps = {
   onEdit: (tag: Tag) => void;
   onDelete: (tagId: string) => void;

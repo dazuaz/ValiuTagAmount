@@ -1,10 +1,9 @@
 import * as React from 'react';
 import {Animated} from 'react-native';
-import {removeTag} from './tagsSlice';
 import TagsList from './TagList';
 import {useDispatch} from 'react-redux';
 
-import {fetchTags} from './tagsSlice';
+import {fetchTags, handleRemoveTag} from './tagsSlice';
 
 type TagListFromServiceProps = {
   offset: Animated.Value;
@@ -21,8 +20,8 @@ export const TagListFromService: React.FC<TagListFromServiceProps> = ({
     dispatch(fetchTags());
   }, [dispatch]);
 
-  const handleRemoveTag = (tagId: string) => {
-    dispatch(removeTag(tagId));
+  const handleDelete = (tagId: string) => {
+    dispatch(handleRemoveTag({tagId}));
   };
 
   const handleRefresh = () => {
@@ -34,7 +33,7 @@ export const TagListFromService: React.FC<TagListFromServiceProps> = ({
       offset={offset}
       onRefresh={() => handleRefresh()}
       onEdit={onEdit}
-      onDelete={(tagId) => handleRemoveTag(tagId)}
+      onDelete={(tagId) => handleDelete(tagId)}
     />
   );
 };
